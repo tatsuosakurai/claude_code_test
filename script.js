@@ -14,11 +14,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const twoPlayerModeButton = document.getElementById('twoPlayerMode');
     const aiModeButton = document.getElementById('aiMode');
     
-    let currentPlayer = 'X';
+    // Game State
+    let currentPlayer = PLAYER_X;
     let gameActive = true;
-    let gameState = ['', '', '', '', '', '', '', '', ''];
+    let gameState = Array(BOARD_SIZE).fill('');
     let isAIMode = false;
     let isAIThinking = false;
+    let aiTimeoutId = null;
     
     const winningConditions = [
         [0, 1, 2],
@@ -67,10 +69,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 isAIThinking = true;
                 
                 // Add a small delay to make the AI move feel more natural
-                setTimeout(() => {
+                aiTimeoutId = setTimeout(() => {
                     makeAIMove();
                     isAIThinking = false;
-                }, 500);
+                    aiTimeoutId = null;
+                }, AI_DELAY_MS);
             }
         }
     }
@@ -143,9 +146,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function handleRestartGame() {
+        // Clear any pending AI moves
+        if (aiTimeoutId) {
+            clearTimeout(aiTimeoutId);
+            aiTimeoutId = null;
+        }
+        
         gameActive = true;
-        currentPlayer = 'X';
-        gameState = ['', '', '', '', '', '', '', '', ''];
+        currentPlayer = PLAYER_X;
+        gameState = Array(BOARD_SIZE).fill('');
+        isAIThinking = false;
         
         if (isAIMode) {
             currentPlayerElement.textContent = 'あなたの番です';
