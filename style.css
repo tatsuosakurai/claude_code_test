@@ -106,6 +106,33 @@ h1 {
     box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
 }
 
+.game-mode {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.mode-btn {
+    background-color: #7f8c8d;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.mode-btn:hover {
+    background-color: #95a5a6;
+    box-shadow: 0 5px 15px rgba(127, 140, 141, 0.3);
+}
+
+.mode-btn.active {
+    background-color: #3498db;
+}
+
+.mode-btn.active:hover {
+    background-color: #2980b9;
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
 .winner {
     color: #27ae60;
     font-weight: bold;
