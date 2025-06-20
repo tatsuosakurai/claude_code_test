@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿弥陀くじ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        #container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #canvas {
+            border: 1px solid #ddd;
+            margin: 20px 0;
+        }
+        #results {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .result-item {
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        #participantCount {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 50px;
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>阿弥陀くじ</h1>
+    <div id="container">
+        <div class="controls">
+            <label>参加者数: 
+                <input type="number" id="participantCount" min="2" max="10" value="4">
+            </label>
+            <button onclick="setupInputs()">設定</button>
+        </div>
+        
+        <div id="inputs"></div>
+        
+        <button onclick="drawAmidakuji()">阿弥陀くじを作成</button>
+        <button onclick="startAnimation()">結果を見る</button>
+        <button onclick="reset()">リセット</button>
+        
+        <canvas id="canvas" width="600" height="400"></canvas>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let participants = [];
+        let prizes = [];
+        let horizontalLines = [];
+        let results = {};
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let animationInProgress = false;
+
+        function setupInputs() {
+            const count = parseInt(document.getElementById('participantCount').value);
+            const inputsDiv = document.getElementById('inputs');
+            inputsDiv.innerHTML = '';
+            
+            const participantDiv = document.createElement('div');
+            participantDiv.innerHTML = '<h3>参加者名：</h3>';
+            for (let i = 0; i < count; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `参加者${i + 1}`;
+                input.id = `participant${i}`;
+                input.value = `参加者${i + 1}`;
+                participantDiv.appendChild(input);
+            }
+            
+            const prizeDiv = document.createElement('div');
+            prizeDiv.innerHTML = '<h3>当たり：</h3>';
+            for (let i = 0; i < count; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `当たり${i + 1}`;
+                input.id = `prize${i}`;
+                input.value = `当たり${i + 1}`;
+                prizeDiv.appendChild(input);
+            }
+            
+            inputsDiv.appendChild(participantDiv);
+            inputsDiv.appendChild(prizeDiv);
+        }
+
+        function drawAmidakuji() {
+            const count = parseInt(document.getElementById('participantCount').value);
+            participants = [];
+            prizes = [];
+            
+            for (let i = 0; i < count; i++) {
+                participants.push(document.getElementById(`participant${i}`).value || `参加者${i + 1}`);
+                prizes.push(document.getElementById(`prize${i}`).value || `当たり${i + 1}`);
+            }
+            
+            const lineCount = count;
+            const startX = 100;
+            const endX = 500;
+            const startY = 50;
+            const endY = 350;
+            const spacing = (endX - startX) / (lineCount - 1);
+            
+            // キャンバスをクリア
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 縦線を描画
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < lineCount; i++) {
+                const x = startX + i * spacing;
+                ctx.beginPath();
+                ctx.moveTo(x, startY);
+                ctx.lineTo(x, endY);
+                ctx.stroke();
+            }
+            
+            // 横線をランダムに生成
+            horizontalLines = [];
+            const horizontalCount = Math.floor(Math.random() * 10) + 10;
+            
+            for (let i = 0; i < horizontalCount; i++) {
+                const lineIndex = Math.floor(Math.random() * (lineCount - 1));
+                const y = startY + Math.random() * (endY - startY - 50) + 25;
+                const x1 = startX + lineIndex * spacing;
+                const x2 = x1 + spacing;
+                
+                horizontalLines.push({ x1, x2, y, lineIndex });
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y);
+                ctx.lineTo(x2, y);
+                ctx.stroke();
+            }
+            
+            // 参加者名を上に表示
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#333';
+            for (let i = 0; i < lineCount; i++) {
+                const x = startX + i * spacing;
+                ctx.fillText(participants[i], x, startY - 10);
+            }
+            
+            // 当たりをシャッフルして下に表示
+            const shuffledPrizes = [...prizes].sort(() => Math.random() - 0.5);
+            for (let i = 0; i < lineCount; i++) {
+                const x = startX + i * spacing;
+                ctx.fillText(shuffledPrizes[i], x, endY + 20);
+            }
+            
+            // 結果を計算
+            calculateResults(lineCount, startX, spacing, shuffledPrizes);
+        }
+
+        function calculateResults(lineCount, startX, spacing, shuffledPrizes) {
+            results = {};
+            
+            for (let i = 0; i < lineCount; i++) {
+                let currentLine = i;
+                let currentY = 0;
+                
+                // 横線を上から順に処理
+                const sortedLines = [...horizontalLines].sort((a, b) => a.y - b.y);
+                
+                for (const line of sortedLines) {
+                    if (line.lineIndex === currentLine || line.lineIndex === currentLine - 1) {
+                        if (line.lineIndex === currentLine) {
+                            currentLine++;
+                        } else {
+                            currentLine--;
+                        }
+                    }
+                }
+                
+                results[participants[i]] = shuffledPrizes[currentLine];
+            }
+        }
+
+        function startAnimation() {
+            if (animationInProgress) return;
+            
+            const count = parseInt(document.getElementById('participantCount').value);
+            const startX = 100;
+            const spacing = (500 - startX) / (count - 1);
+            
+            animationInProgress = true;
+            let completedAnimations = 0;
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    animatePath(i, startX, spacing, () => {
+                        completedAnimations++;
+                        if (completedAnimations === count) {
+                            showResults();
+                            animationInProgress = false;
+                        }
+                    });
+                }, i * 300);
+            }
+        }
+
+        function animatePath(startLine, startX, spacing, callback) {
+            const path = [];
+            let currentLine = startLine;
+            let currentY = 50;
+            
+            path.push({ x: startX + startLine * spacing, y: currentY });
+            
+            const sortedLines = [...horizontalLines].sort((a, b) => a.y - b.y);
+            
+            for (const line of sortedLines) {
+                if (line.lineIndex === currentLine || line.lineIndex === currentLine - 1) {
+                    path.push({ x: startX + currentLine * spacing, y: line.y });
+                    
+                    if (line.lineIndex === currentLine) {
+                        currentLine++;
+                    } else {
+                        currentLine--;
+                    }
+                    
+                    path.push({ x: startX + currentLine * spacing, y: line.y });
+                }
+            }
+            
+            path.push({ x: startX + currentLine * spacing, y: 350 });
+            
+            // パスを描画
+            ctx.strokeStyle = `hsl(${startLine * 60}, 70%, 50%)`;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            
+            let pathIndex = 0;
+            const drawNextSegment = () => {
+                if (pathIndex < path.length - 1) {
+                    ctx.moveTo(path[pathIndex].x, path[pathIndex].y);
+                    ctx.lineTo(path[pathIndex + 1].x, path[pathIndex + 1].y);
+                    ctx.stroke();
+                    pathIndex++;
+                    setTimeout(drawNextSegment, 50);
+                } else {
+                    callback();
+                }
+            };
+            
+            drawNextSegment();
+        }
+
+        function showResults() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h3>結果：</h3>';
+            
+            for (const [participant, prize] of Object.entries(results)) {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.textContent = `${participant} → ${prize}`;
+                resultsDiv.appendChild(resultItem);
+            }
+        }
+
+        function reset() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('results').innerHTML = '';
+            horizontalLines = [];
+            results = {};
+            animationInProgress = false;
+        }
+
+        // 初期設定
+        setupInputs();
+    </script>
+</body>
+</html>
