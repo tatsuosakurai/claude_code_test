@@ -187,23 +187,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function findBestMove(board) {
-        // First check if AI can win in the next move
+        // Check for winning/blocking moves in a single pass
         for (let i = 0; i < BOARD_SIZE; i++) {
             if (board[i] === '') {
-                board[i] = 'O';
-                if (checkWinner(board, 'O')) {
+                // Check if AI can win
+                board[i] = PLAYER_O;
+                if (checkWinner(board, PLAYER_O)) {
                     board[i] = '';
                     return i;
                 }
-                board[i] = '';
-            }
-        }
-        
-        // Then check if player can win in the next move and block them
-        for (let i = 0; i < BOARD_SIZE; i++) {
-            if (board[i] === '') {
-                board[i] = 'X';
-                if (checkWinner(board, 'X')) {
+                
+                // Check if player can win and block them
+                board[i] = PLAYER_X;
+                if (checkWinner(board, PLAYER_X)) {
                     board[i] = '';
                     return i;
                 }
@@ -231,7 +227,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // If no good move is found, pick a random empty cell
-        const emptyCells = board.map((cell, index) => cell === '' ? index : -1).filter(index => index !== -1);
+        const emptyCells = board.reduce((acc, cell, index) => {
+            if (cell === '') acc.push(index);
+            return acc;
+        }, []);
+        
         if (emptyCells.length > 0) {
             return emptyCells[Math.floor(Math.random() * emptyCells.length)];
         }
