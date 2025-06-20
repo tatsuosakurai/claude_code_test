@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
     
     // Set up game mode buttons
-    twoPlayerModeButton.addEventListener('click', () => {
+    twoPlayerModeButton?.addEventListener('click', () => {
         if (isAIMode) {
             isAIMode = false;
             twoPlayerModeButton.classList.add('active');
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    aiModeButton.addEventListener('click', () => {
+    aiModeButton?.addEventListener('click', () => {
         if (!isAIMode) {
             isAIMode = true;
             aiModeButton.classList.add('active');
@@ -76,6 +76,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function handleCellPlayed(clickedCell, clickedCellIndex) {
+        if (!clickedCell || clickedCellIndex < 0 || clickedCellIndex >= BOARD_SIZE) {
+            console.error('Invalid cell or index');
+            return;
+        }
+        
         gameState[clickedCellIndex] = currentPlayer;
         clickedCell.textContent = currentPlayer;
         clickedCell.classList.add(`cell-${currentPlayer.toLowerCase()}`);
@@ -160,11 +165,25 @@ document.addEventListener('DOMContentLoaded', function() {
     function makeAIMove() {
         if (!gameActive) return;
         
-        const bestMove = findBestMove(gameState);
-        const cellToPlay = document.querySelector(`.cell[data-index="${bestMove}"]`);
-        
-        handleCellPlayed(cellToPlay, bestMove);
-        handleResultValidation();
+        try {
+            const bestMove = findBestMove(gameState);
+            if (bestMove === -1) {
+                console.error('No valid move found');
+                return;
+            }
+            
+            const cellToPlay = document.querySelector(`.cell[data-index="${bestMove}"]`);
+            if (!cellToPlay) {
+                console.error('Cell element not found');
+                return;
+            }
+            
+            handleCellPlayed(cellToPlay, bestMove);
+            handleResultValidation();
+        } catch (error) {
+            console.error('Error in AI move:', error);
+            isAIThinking = false;
+        }
     }
     
     function findBestMove(board) {
@@ -230,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
     }
     
-    cells.forEach(cell => cell.addEventListener('click', handleCellClick));
-    resetButton.addEventListener('click', handleRestartGame);
+    // Event listeners with error handling
+    cells.forEach(cell => cell?.addEventListener('click', handleCellClick));
+    resetButton?.addEventListener('click', handleRestartGame);
 });
