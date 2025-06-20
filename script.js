@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Constants
+    const AI_DELAY_MS = 500;
+    const BOARD_SIZE = 9;
+    const PLAYER_X = 'X';
+    const PLAYER_O = 'O';
+    const CENTER_POSITION = 4;
+    
+    // DOM Elements
     const gameBoard = document.getElementById('gameBoard');
     const cells = document.querySelectorAll('.cell');
     const currentPlayerElement = document.getElementById('currentPlayer');
@@ -161,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function findBestMove(board) {
         // First check if AI can win in the next move
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < BOARD_SIZE; i++) {
             if (board[i] === '') {
                 board[i] = 'O';
                 if (checkWinner(board, 'O')) {
@@ -173,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Then check if player can win in the next move and block them
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < BOARD_SIZE; i++) {
             if (board[i] === '') {
                 board[i] = 'X';
                 if (checkWinner(board, 'X')) {
