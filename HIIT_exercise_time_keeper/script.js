@@ -253,13 +253,23 @@ function updateTimerStyle() {
 // 進捗表示を更新
 function updateProgressDisplay() {
     // 全体進捗
-    const completedSets = timer.state === TimerState.FINISHED ? timer.settings.totalSets :
-        timer.state === TimerState.PREPARE ? 0 : 
-        timer.state === TimerState.REST ? timer.currentSet : timer.currentSet - 1;
+    let completedSets = 0;
+    let currentSetProgress = 0;
     
-    const currentSetProgress = timer.state === TimerState.WORK ? 
-        (timer.settings.workTime - timer.currentTime) / timer.settings.workTime : 
-        timer.state === TimerState.REST ? 1.0 : 0;
+    if (timer.state === TimerState.FINISHED) {
+        completedSets = timer.settings.totalSets;
+        currentSetProgress = 0;
+    } else if (timer.state === TimerState.PREPARE) {
+        completedSets = 0;
+        currentSetProgress = 0;
+    } else if (timer.state === TimerState.WORK) {
+        completedSets = timer.currentSet - 1;
+        currentSetProgress = (timer.settings.workTime - timer.currentTime) / timer.settings.workTime;
+    } else if (timer.state === TimerState.REST) {
+        // 休憩中は現在のセットを完了扱いにする（進捗は上がらない）
+        completedSets = timer.currentSet;
+        currentSetProgress = 0;
+    }
     
     const overallProgressPercent = ((completedSets + currentSetProgress) / timer.settings.totalSets) * 100;
     
