@@ -93,6 +93,35 @@
                     </div>
                 </div>
                 
+                <div class="preset-settings">
+                    <div class="settings-header">
+                        <span class="settings-icon">📋</span> プリセット
+                    </div>
+                    
+                    <div class="setting-row">
+                        <label for="presetSelect">プリセット:</label>
+                        <select id="presetSelect" class="preset-select">
+                            <option value="custom">カスタム</option>
+                            <option value="tabata">タバタ式</option>
+                            <option value="emom">EMOM</option>
+                            <option value="beginner">初心者向け</option>
+                        </select>
+                    </div>
+                    
+                    <div class="preset-save">
+                        <div class="setting-row">
+                            <label for="presetNameInput">保存名:</label>
+                            <input type="text" id="presetNameInput" placeholder="プリセット名を入力" class="preset-name-input">
+                        </div>
+                        <button id="savePresetBtn" class="save-preset-btn">プリセットを保存</button>
+                    </div>
+                    
+                    <div class="saved-presets" id="savedPresets">
+                        <div class="saved-presets-header">保存済みプリセット:</div>
+                        <div class="saved-presets-list" id="savedPresetsList"></div>
+                    </div>
+                </div>
+                
                 <button id="applySettingsBtn" class="apply-btn">設定を適用</button>
             </div>
         </main>

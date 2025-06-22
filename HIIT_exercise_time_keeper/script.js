@@ -88,6 +88,86 @@ const audioSystem = {
     }
 };
 
+// プリセット管理システム
+const presetSystem = {
+    // デフォルトプリセット
+    defaultPresets: {
+        tabata: {
+            name: 'タバタ式',
+            workTime: 20,
+            restTime: 10,
+            totalSets: 8,
+            audioEnabled: true,
+            volume: 0.7
+        },
+        emom: {
+            name: 'EMOM',
+            workTime: 45,
+            restTime: 15,
+            totalSets: 10,
+            audioEnabled: true,
+            volume: 0.7
+        },
+        beginner: {
+            name: '初心者向け',
+            workTime: 15,
+            restTime: 15,
+            totalSets: 6,
+            audioEnabled: true,
+            volume: 0.7
+        }
+    },
+    
+    // カスタムプリセットをLocalStorageから取得
+    getCustomPresets() {
+        try {
+            const saved = localStorage.getItem('hiit-custom-presets');
+            return saved ? JSON.parse(saved) : {};
+        } catch (error) {
+            console.warn('Failed to load custom presets:', error);
+            return {};
+        }
+    },
+    
+    // カスタムプリセットをLocalStorageに保存
+    saveCustomPresets(presets) {
+        try {
+            localStorage.setItem('hiit-custom-presets', JSON.stringify(presets));
+        } catch (error) {
+            console.warn('Failed to save custom presets:', error);
+        }
+    },
+    
+    // プリセットを取得
+    getPreset(key) {
+        if (this.defaultPresets[key]) {
+            return this.defaultPresets[key];
+        }
+        
+        const customPresets = this.getCustomPresets();
+        return customPresets[key] || null;
+    },
+    
+    // カスタムプリセットを保存
+    savePreset(key, preset) {
+        const customPresets = this.getCustomPresets();
+        customPresets[key] = preset;
+        this.saveCustomPresets(customPresets);
+    },
+    
+    // カスタムプリセットを削除
+    deletePreset(key) {
+        const customPresets = this.getCustomPresets();
+        delete customPresets[key];
+        this.saveCustomPresets(customPresets);
+    },
+    
+    // 全カスタムプリセットを取得
+    getAllCustomPresets() {
+        return this.getCustomPresets();
+    }
+};
+
 // DOM要素の取得
 const elements = {
     timeDisplay: document.getElementById('timeDisplay'),
@@ -107,7 +187,12 @@ const elements = {
     // 音声関連の要素
     audioEnabled: document.getElementById('audioEnabled'),
     volumeSlider: document.getElementById('volumeSlider'),
-    volumeDisplay: document.getElementById('volumeDisplay')
+    volumeDisplay: document.getElementById('volumeDisplay'),
+    // プリセット関連の要素
+    presetSelect: document.getElementById('presetSelect'),
+    presetNameInput: document.getElementById('presetNameInput'),
+    savePresetBtn: document.getElementById('savePresetBtn'),
+    savedPresetsList: document.getElementById('savedPresetsList')
 };
 
 // 初期表示の更新
@@ -125,6 +210,9 @@ function updateDisplay() {
     elements.audioEnabled.checked = timer.settings.audioEnabled;
     elements.volumeSlider.value = Math.round(timer.settings.volume * 100);
     elements.volumeDisplay.textContent = Math.round(timer.settings.volume * 100) + '%';
+    
+    // プリセット表示の更新
+    updateSavedPresetsList();
 }
 
 // タイマーの状態に応じた表示の更新
@@ -342,6 +430,150 @@ elements.volumeSlider.addEventListener('input', (e) => {
     const volume = e.target.value;
     elements.volumeDisplay.textContent = volume + '%';
 });
+
+// プリセット選択の変更
+elements.presetSelect.addEventListener('change', (e) => {
+    const selectedPreset = e.target.value;
+    
+    if (selectedPreset !== 'custom') {
+        const preset = presetSystem.getPreset(selectedPreset);
+        if (preset) {
+            loadPreset(preset);
+        }
+    }
+});
+
+// プリセット保存
+elements.savePresetBtn.addEventListener('click', () => {
+    const presetName = elements.presetNameInput.value.trim();
+    
+    if (!presetName) {
+        alert('プリセット名を入力してください');
+        return;
+    }
+    
+    if (timer.interval) {
+        alert('タイマー動作中はプリセットを保存できません');
+        return;
+    }
+    
+    const validatedSettings = validateSettings();
+    if (!validatedSettings) return;
+    
+    const preset = {
+        name: presetName,
+        ...validatedSettings
+    };
+    
+    // プリセット名をキーとして保存（重複を許可）
+    const key = `custom_${Date.now()}`;
+    presetSystem.savePreset(key, preset);
+    
+    // フィードバック
+    elements.presetNameInput.value = '';
+    const originalText = elements.savePresetBtn.textContent;
+    elements.savePresetBtn.textContent = '✓ 保存しました';
+    elements.savePresetBtn.style.backgroundColor = '#28a745';
+    
+    setTimeout(() => {
+        elements.savePresetBtn.textContent = originalText;
+        elements.savePresetBtn.style.backgroundColor = '';
+    }, 1500);
+    
+    updateSavedPresetsList();
+});
+
+// プリセットを読み込む関数
+function loadPreset(preset) {
+    // 設定を更新
+    timer.settings = {
+        workTime: preset.workTime,
+        restTime: preset.restTime,
+        totalSets: preset.totalSets,
+        audioEnabled: preset.audioEnabled,
+        volume: preset.volume
+    };
+    
+    // タイマーをリセット
+    timer.state = TimerState.IDLE;
+    timer.currentSet = 1;
+    timer.currentTime = timer.settings.workTime;
+    
+    // 表示を更新
+    updateDisplay();
+    updateTimerStyle();
+    
+    // プリセット選択を"カスタム"に戻す
+    elements.presetSelect.value = 'custom';
+}
+
+// 保存済みプリセット一覧を更新
+function updateSavedPresetsList() {
+    const customPresets = presetSystem.getAllCustomPresets();
+    const listContainer = elements.savedPresetsList;
+    
+    // 既存の要素をクリア
+    listContainer.innerHTML = '';
+    
+    const presetKeys = Object.keys(customPresets);
+    
+    if (presetKeys.length === 0) {
+        const noPresets = document.createElement('div');
+        noPresets.className = 'no-presets';
+        noPresets.textContent = '保存されたプリセットはありません';
+        listContainer.appendChild(noPresets);
+        return;
+    }
+    
+    presetKeys.forEach(key => {
+        const preset = customPresets[key];
+        const presetItem = document.createElement('div');
+        presetItem.className = 'saved-preset-item';
+        
+        presetItem.innerHTML = `
+            <div>
+                <div class="preset-name">${preset.name}</div>
+                <div class="preset-info">${preset.workTime}秒/${preset.restTime}秒 × ${preset.totalSets}セット</div>
+            </div>
+            <div class="preset-actions">
+                <button class="preset-load-btn" onclick="loadSavedPreset('${key}')">読込</button>
+                <button class="preset-delete-btn" onclick="deleteSavedPreset('${key}')">削除</button>
+            </div>
+        `;
+        
+        listContainer.appendChild(presetItem);
+    });
+}
+
+// 保存済みプリセットを読み込む
+function loadSavedPreset(key) {
+    if (timer.interval) {
+        alert('タイマー動作中はプリセットを変更できません');
+        return;
+    }
+    
+    const preset = presetSystem.getPreset(key);
+    if (preset) {
+        loadPreset(preset);
+        
+        // フィードバック
+        const originalBg = document.querySelector(`[onclick="loadSavedPreset('${key}')"]`).style.backgroundColor;
+        document.querySelector(`[onclick="loadSavedPreset('${key}')"]`).style.backgroundColor = '#28a745';
+        
+        setTimeout(() => {
+            const btn = document.querySelector(`[onclick="loadSavedPreset('${key}')"]`);
+            if (btn) btn.style.backgroundColor = originalBg;
+        }, 1000);
+    }
+}
+
+// 保存済みプリセットを削除
+function deleteSavedPreset(key) {
+    if (confirm('このプリセットを削除しますか？')) {
+        presetSystem.deletePreset(key);
+        updateSavedPresetsList();
+    }
+}
 
 // 初期化
 updateDisplay();
