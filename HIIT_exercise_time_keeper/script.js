@@ -1,8 +1,8 @@
 // タイマーの状態を管理
 const TimerState = {
     IDLE: 'idle',
+    PREPARE: 'prepare',
     WORK: 'work',
-    REST: 'rest',
     FINISHED: 'finished'
 };
 
@@ -18,7 +18,7 @@ const timer = {
     // デフォルト設定
     settings: {
         workTime: 20,
-        restTime: 10,
+        prepareTime: 10,
         totalSets: 9,
         audioEnabled: true,
         volume: 0.7
@@ -179,29 +179,19 @@ const elements = {
     startBtn: document.getElementById('startBtn'),
     stopBtn: document.getElementById('stopBtn'),
     resetBtn: document.getElementById('resetBtn'),
+    settingsBtn: document.getElementById('settingsBtn'),
+    settingsPanel: document.getElementById('settingsPanel'),
     timerDisplay: document.querySelector('.timer-display'),
     nextAction: document.getElementById('nextAction'),
     // 設定関連の要素
     workTimeInput: document.getElementById('workTimeInput'),
-    restTimeInput: document.getElementById('restTimeInput'),
+    prepareTimeInput: document.getElementById('prepareTimeInput'),
     setCountInput: document.getElementById('setCountInput'),
     applySettingsBtn: document.getElementById('applySettingsBtn'),
-    // 音声関連の要素
-    audioEnabled: document.getElementById('audioEnabled'),
-    volumeSlider: document.getElementById('volumeSlider'),
-    volumeDisplay: document.getElementById('volumeDisplay'),
-    // プリセット関連の要素
-    presetSelect: document.getElementById('presetSelect'),
-    presetNameInput: document.getElementById('presetNameInput'),
-    savePresetBtn: document.getElementById('savePresetBtn'),
-    savedPresetsList: document.getElementById('savedPresetsList'),
     // 進捗表示関連の要素
-    currentSetProgress: document.getElementById('currentSetProgress'),
-    currentSetProgressText: document.getElementById('currentSetProgressText'),
     overallProgress: document.getElementById('overallProgress'),
     overallProgressText: document.getElementById('overallProgressText'),
-    totalElapsedTime: document.getElementById('totalElapsedTime'),
-    estimatedEndTime: document.getElementById('estimatedEndTime')
+    totalElapsedTime: document.getElementById('totalElapsedTime')
 };
 
 // 初期表示の更新
@@ -212,16 +202,8 @@ function updateDisplay() {
     
     // 設定入力フィールドの値を更新
     elements.workTimeInput.value = timer.settings.workTime;
-    elements.restTimeInput.value = timer.settings.restTime;
+    elements.prepareTimeInput.value = timer.settings.prepareTime;
     elements.setCountInput.value = timer.settings.totalSets;
-    
-    // 音声設定の更新
-    elements.audioEnabled.checked = timer.settings.audioEnabled;
-    elements.volumeSlider.value = Math.round(timer.settings.volume * 100);
-    elements.volumeDisplay.textContent = Math.round(timer.settings.volume * 100) + '%';
-    
-    // プリセット表示の更新
-    updateSavedPresetsList();
     
     // 進捗表示の更新
     updateProgressDisplay();
@@ -233,26 +215,23 @@ function updateTimerStyle() {
     elements.nextAction.textContent = '';
     
     switch (timer.state) {
+        case TimerState.PREPARE:
+            elements.status.textContent = '準備時間';
+            elements.nextAction.textContent = '準備してください';
+            break;
         case TimerState.WORK:
             elements.timerDisplay.classList.add('work');
             elements.status.textContent = '運動中';
             if (timer.currentSet < timer.settings.totalSets) {
-                elements.nextAction.textContent = `次：休憩 ${timer.settings.restTime}秒`;
+                elements.nextAction.textContent = `次：セット ${timer.currentSet + 1}`;
             } else {
                 elements.nextAction.textContent = '次：完了！';
             }
             // 運動開始音を再生
             audioSystem.playWorkStart();
             break;
-        case TimerState.REST:
-            elements.timerDisplay.classList.add('rest');
-            elements.status.textContent = '休憩中';
-            elements.nextAction.textContent = `次：運動 ${timer.settings.workTime}秒`;
-            // 休憩開始音を再生
-            audioSystem.playRestStart();
-            break;
         case TimerState.IDLE:
-            elements.status.textContent = '準備完了';
+            elements.status.textContent = '準備時間';
             elements.nextAction.textContent = 'スタートボタンを押してください';
             break;
         case TimerState.FINISHED:
@@ -266,19 +245,13 @@ function updateTimerStyle() {
 
 // 進捗表示を更新
 function updateProgressDisplay() {
-    // 現在のセット進捗
-    const totalTimeInCurrentSet = timer.state === TimerState.WORK ? 
-        timer.settings.workTime : timer.settings.restTime;
-    const elapsedTimeInCurrentSet = totalTimeInCurrentSet - timer.currentTime;
-    const currentSetProgressPercent = timer.state === TimerState.IDLE ? 0 : 
-        (elapsedTimeInCurrentSet / totalTimeInCurrentSet) * 100;
-    
-    elements.currentSetProgress.style.width = currentSetProgressPercent + '%';
-    elements.currentSetProgressText.textContent = Math.round(currentSetProgressPercent) + '%';
-    
     // 全体進捗
-    const completedSets = timer.currentSet - 1;
-    const currentSetProgress = timer.state === TimerState.IDLE ? 0 : currentSetProgressPercent / 100;
+    const completedSets = timer.state === TimerState.FINISHED ? timer.settings.totalSets :
+        timer.state === TimerState.PREPARE ? 0 : timer.currentSet - 1;
+    
+    const currentSetProgress = timer.state === TimerState.WORK ? 
+        (timer.settings.workTime - timer.currentTime) / timer.settings.workTime : 0;
+    
     const overallProgressPercent = ((completedSets + currentSetProgress) / timer.settings.totalSets) * 100;
     
     elements.overallProgress.style.width = overallProgressPercent + '%';
@@ -289,19 +262,16 @@ function updateProgressDisplay() {
         timer.totalElapsedTime = Math.floor((Date.now() - timer.startTime) / 1000);
     }
     elements.totalElapsedTime.textContent = formatTime(timer.totalElapsedTime);
-    
-    // 予想終了時間
-    const estimatedTotalTime = calculateEstimatedTotalTime();
-    elements.estimatedEndTime.textContent = formatTime(estimatedTotalTime);
 }
 
-// 予想総時間を計算
-function calculateEstimatedTotalTime() {
-    const singleSetTime = timer.settings.workTime + timer.settings.restTime;
-    const totalSetTime = singleSetTime * timer.settings.totalSets;
-    
-    // 最後のセットは休憩時間を含まない
-    return totalSetTime - timer.settings.restTime;
+// 運動のハーフタイムで通知
+function checkHalfTime() {
+    if (timer.state === TimerState.WORK) {
+        const halfway = Math.floor(timer.settings.workTime / 2);
+        if (timer.currentTime === halfway) {
+            audioSystem.playCountdown();
+        }
+    }
 }
 
 // 時間をMM:SS形式にフォーマット
@@ -319,6 +289,9 @@ function countdown() {
     // 進捗表示を更新
     updateProgressDisplay();
     
+    // ハーフタイム通知をチェック
+    checkHalfTime();
+    
     // カウントダウン音（3,2,1）
     if (timer.currentTime <= 3 && timer.currentTime > 0) {
         audioSystem.playCountdown();
@@ -326,12 +299,14 @@ function countdown() {
     
     if (timer.currentTime <= 0) {
         // 現在の状態に応じて次の状態へ遷移
-        if (timer.state === TimerState.WORK) {
-            // 休憩へ移行
-            timer.state = TimerState.REST;
-            timer.currentTime = timer.settings.restTime;
+        if (timer.state === TimerState.PREPARE) {
+            // 準備時間終了、最初の運動へ
+            timer.state = TimerState.WORK;
+            timer.currentSet = 1;
+            timer.currentTime = timer.settings.workTime;
+            elements.currentSet.textContent = timer.currentSet;
             updateTimerStyle();
-        } else if (timer.state === TimerState.REST) {
+        } else if (timer.state === TimerState.WORK) {
             // 次のセットへ
             timer.currentSet++;
             
@@ -339,7 +314,7 @@ function countdown() {
                 // 全セット完了
                 finishTimer();
             } else {
-                // 次のセットの運動へ
+                // 次のセットの運動へ（休憩なし）
                 timer.state = TimerState.WORK;
                 timer.currentTime = timer.settings.workTime;
                 elements.currentSet.textContent = timer.currentSet;
@@ -355,10 +330,10 @@ async function startTimer() {
     await audioSystem.init();
     
     if (timer.state === TimerState.IDLE || timer.state === TimerState.FINISHED) {
-        // 初回開始時
-        timer.currentSet = 1;
-        timer.state = TimerState.WORK;
-        timer.currentTime = timer.settings.workTime;
+        // 初回開始時は準備時間から
+        timer.currentSet = 0;
+        timer.state = TimerState.PREPARE;
+        timer.currentTime = timer.settings.prepareTime;
         timer.startTime = Date.now();
         timer.totalElapsedTime = 0;
         updateTimerStyle();
@@ -392,7 +367,7 @@ function resetTimer() {
     stopTimer();
     timer.state = TimerState.IDLE;
     timer.currentSet = 1;
-    timer.currentTime = timer.settings.workTime;
+    timer.currentTime = timer.settings.prepareTime;
     timer.startTime = null;
     timer.totalElapsedTime = 0;
     updateDisplay();
@@ -409,7 +384,7 @@ function finishTimer() {
 // 設定の検証
 function validateSettings() {
     const workTime = parseInt(elements.workTimeInput.value);
-    const restTime = parseInt(elements.restTimeInput.value);
+    const prepareTime = parseInt(elements.prepareTimeInput.value);
     const totalSets = parseInt(elements.setCountInput.value);
     
     // 値の検証
@@ -418,8 +393,8 @@ function validateSettings() {
         return false;
     }
     
-    if (isNaN(restTime) || restTime < 1 || restTime > 999) {
-        alert('休憩時間は1〜999の間で入力してください');
+    if (isNaN(prepareTime) || prepareTime < 1 || prepareTime > 999) {
+        alert('準備時間は1〜999の間で入力してください');
         return false;
     }
     
@@ -430,10 +405,10 @@ function validateSettings() {
     
     return { 
         workTime, 
-        restTime, 
+        prepareTime, 
         totalSets,
-        audioEnabled: elements.audioEnabled.checked,
-        volume: elements.volumeSlider.value / 100
+        audioEnabled: timer.settings.audioEnabled,
+        volume: timer.settings.volume
     };
 }
 
@@ -454,13 +429,16 @@ function applySettings() {
     // タイマーをリセット
     timer.state = TimerState.IDLE;
     timer.currentSet = 1;
-    timer.currentTime = timer.settings.workTime;
+    timer.currentTime = timer.settings.prepareTime;
     timer.startTime = null;
     timer.totalElapsedTime = 0;
     
     // 表示を更新
     updateDisplay();
     updateTimerStyle();
+    
+    // 設定パネルを閉じる
+    elements.settingsPanel.classList.add('hidden');
     
     // フィードバック
     const applyBtn = elements.applySettingsBtn;
@@ -474,10 +452,16 @@ function applySettings() {
     }, 1500);
 }
 
+// 設定パネルの表示/非表示切り替え
+function toggleSettings() {
+    elements.settingsPanel.classList.toggle('hidden');
+}
+
 // イベントリスナーの設定
 elements.startBtn.addEventListener('click', startTimer);
 elements.stopBtn.addEventListener('click', stopTimer);
 elements.resetBtn.addEventListener('click', resetTimer);
+elements.settingsBtn.addEventListener('click', toggleSettings);
 elements.applySettingsBtn.addEventListener('click', applySettings);
 
 // 入力フィールドのリアルタイムバリデーション
@@ -486,7 +470,7 @@ elements.workTimeInput.addEventListener('input', (e) => {
     if (e.target.value > 999) e.target.value = 999;
 });
 
-elements.restTimeInput.addEventListener('input', (e) => {
+elements.prepareTimeInput.addEventListener('input', (e) => {
     if (e.target.value < 1) e.target.value = 1;
     if (e.target.value > 999) e.target.value = 999;
 });
@@ -496,157 +480,6 @@ elements.setCountInput.addEventListener('input', (e) => {
     if (e.target.value > 99) e.target.value = 99;
 });
 
-// 音量スライダーの更新
-elements.volumeSlider.addEventListener('input', (e) => {
-    const volume = e.target.value;
-    elements.volumeDisplay.textContent = volume + '%';
-});
-
-// プリセット選択の変更
-elements.presetSelect.addEventListener('change', (e) => {
-    const selectedPreset = e.target.value;
-    
-    if (selectedPreset !== 'custom') {
-        const preset = presetSystem.getPreset(selectedPreset);
-        if (preset) {
-            loadPreset(preset);
-        }
-    }
-});
-
-// プリセット保存
-elements.savePresetBtn.addEventListener('click', () => {
-    const presetName = elements.presetNameInput.value.trim();
-    
-    if (!presetName) {
-        alert('プリセット名を入力してください');
-        return;
-    }
-    
-    if (timer.interval) {
-        alert('タイマー動作中はプリセットを保存できません');
-        return;
-    }
-    
-    const validatedSettings = validateSettings();
-    if (!validatedSettings) return;
-    
-    const preset = {
-        name: presetName,
-        ...validatedSettings
-    };
-    
-    // プリセット名をキーとして保存（重複を許可）
-    const key = `custom_${Date.now()}`;
-    presetSystem.savePreset(key, preset);
-    
-    // フィードバック
-    elements.presetNameInput.value = '';
-    const originalText = elements.savePresetBtn.textContent;
-    elements.savePresetBtn.textContent = '✓ 保存しました';
-    elements.savePresetBtn.style.backgroundColor = '#28a745';
-    
-    setTimeout(() => {
-        elements.savePresetBtn.textContent = originalText;
-        elements.savePresetBtn.style.backgroundColor = '';
-    }, 1500);
-    
-    updateSavedPresetsList();
-});
-
-// プリセットを読み込む関数
-function loadPreset(preset) {
-    // 設定を更新
-    timer.settings = {
-        workTime: preset.workTime,
-        restTime: preset.restTime,
-        totalSets: preset.totalSets,
-        audioEnabled: preset.audioEnabled,
-        volume: preset.volume
-    };
-    
-    // タイマーをリセット
-    timer.state = TimerState.IDLE;
-    timer.currentSet = 1;
-    timer.currentTime = timer.settings.workTime;
-    timer.startTime = null;
-    timer.totalElapsedTime = 0;
-    
-    // 表示を更新
-    updateDisplay();
-    updateTimerStyle();
-    
-    // プリセット選択を"カスタム"に戻す
-    elements.presetSelect.value = 'custom';
-}
-
-// 保存済みプリセット一覧を更新
-function updateSavedPresetsList() {
-    const customPresets = presetSystem.getAllCustomPresets();
-    const listContainer = elements.savedPresetsList;
-    
-    // 既存の要素をクリア
-    listContainer.innerHTML = '';
-    
-    const presetKeys = Object.keys(customPresets);
-    
-    if (presetKeys.length === 0) {
-        const noPresets = document.createElement('div');
-        noPresets.className = 'no-presets';
-        noPresets.textContent = '保存されたプリセットはありません';
-        listContainer.appendChild(noPresets);
-        return;
-    }
-    
-    presetKeys.forEach(key => {
-        const preset = customPresets[key];
-        const presetItem = document.createElement('div');
-        presetItem.className = 'saved-preset-item';
-        
-        presetItem.innerHTML = `
-            <div>
-                <div class="preset-name">${preset.name}</div>
-                <div class="preset-info">${preset.workTime}秒/${preset.restTime}秒 × ${preset.totalSets}セット</div>
-            </div>
-            <div class="preset-actions">
-                <button class="preset-load-btn" onclick="loadSavedPreset('${key}')">読込</button>
-                <button class="preset-delete-btn" onclick="deleteSavedPreset('${key}')">削除</button>
-            </div>
-        `;
-        
-        listContainer.appendChild(presetItem);
-    });
-}
-
-// 保存済みプリセットを読み込む
-function loadSavedPreset(key) {
-    if (timer.interval) {
-        alert('タイマー動作中はプリセットを変更できません');
-        return;
-    }
-    
-    const preset = presetSystem.getPreset(key);
-    if (preset) {
-        loadPreset(preset);
-        
-        // フィードバック
-        const originalBg = document.querySelector(`[onclick="loadSavedPreset('${key}')"]`).style.backgroundColor;
-        document.querySelector(`[onclick="loadSavedPreset('${key}')"]`).style.backgroundColor = '#28a745';
-        
-        setTimeout(() => {
-            const btn = document.querySelector(`[onclick="loadSavedPreset('${key}')"]`);
-            if (btn) btn.style.backgroundColor = originalBg;
-        }, 1000);
-    }
-}
-
-// 保存済みプリセットを削除
-function deleteSavedPreset(key) {
-    if (confirm('このプリセットを削除しますか？')) {
-        presetSystem.deletePreset(key);
-        updateSavedPresetsList();
-    }
-}
 
 // 初期化
 updateDisplay();

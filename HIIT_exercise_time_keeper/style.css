@@ -244,6 +244,11 @@ h1 {
     border-radius: 15px;
     padding: 20px;
     margin-top: 30px;
+    transition: all 0.3s ease;
+}
+
+.settings.hidden {
+    display: none;
 }
 
 .settings-header {
