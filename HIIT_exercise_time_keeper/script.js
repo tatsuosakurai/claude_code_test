@@ -3,6 +3,7 @@ const TimerState = {
     IDLE: 'idle',
     PREPARE: 'prepare',
     WORK: 'work',
+    REST: 'rest',
     FINISHED: 'finished'
 };
 
@@ -18,6 +19,7 @@ const timer = {
     // デフォルト設定
     settings: {
         workTime: 20,
+        restTime: 10,
         prepareTime: 10,
         totalSets: 9,
         audioEnabled: true,
@@ -223,12 +225,19 @@ function updateTimerStyle() {
             elements.timerDisplay.classList.add('work');
             elements.status.textContent = '運動中';
             if (timer.currentSet < timer.settings.totalSets) {
-                elements.nextAction.textContent = `次：セット ${timer.currentSet + 1}`;
+                elements.nextAction.textContent = `次：休憩 ${timer.settings.restTime}秒`;
             } else {
                 elements.nextAction.textContent = '次：完了！';
             }
             // 運動開始音を再生
             audioSystem.playWorkStart();
+            break;
+        case TimerState.REST:
+            elements.timerDisplay.classList.add('rest');
+            elements.status.textContent = '休憩中';
+            elements.nextAction.textContent = `次：セット ${timer.currentSet + 1}`;
+            // 休憩開始音を再生
+            audioSystem.playRestStart();
             break;
         case TimerState.IDLE:
             elements.status.textContent = '準備時間';
@@ -247,10 +256,12 @@ function updateTimerStyle() {
 function updateProgressDisplay() {
     // 全体進捗
     const completedSets = timer.state === TimerState.FINISHED ? timer.settings.totalSets :
-        timer.state === TimerState.PREPARE ? 0 : timer.currentSet - 1;
+        timer.state === TimerState.PREPARE ? 0 : 
+        timer.state === TimerState.REST ? timer.currentSet : timer.currentSet - 1;
     
     const currentSetProgress = timer.state === TimerState.WORK ? 
-        (timer.settings.workTime - timer.currentTime) / timer.settings.workTime : 0;
+        (timer.settings.workTime - timer.currentTime) / timer.settings.workTime : 
+        timer.state === TimerState.REST ? 1.0 : 0;
     
     const overallProgressPercent = ((completedSets + currentSetProgress) / timer.settings.totalSets) * 100;
     
@@ -307,19 +318,22 @@ function countdown() {
             elements.currentSet.textContent = timer.currentSet;
             updateTimerStyle();
         } else if (timer.state === TimerState.WORK) {
-            // 次のセットへ
-            timer.currentSet++;
-            
-            if (timer.currentSet > timer.settings.totalSets) {
-                // 全セット完了
+            if (timer.currentSet === timer.settings.totalSets) {
+                // 最後のセット完了
                 finishTimer();
             } else {
-                // 次のセットの運動へ（休憩なし）
-                timer.state = TimerState.WORK;
-                timer.currentTime = timer.settings.workTime;
-                elements.currentSet.textContent = timer.currentSet;
+                // 休憩へ移行
+                timer.state = TimerState.REST;
+                timer.currentTime = timer.settings.restTime;
                 updateTimerStyle();
             }
+        } else if (timer.state === TimerState.REST) {
+            // 次のセットへ
+            timer.currentSet++;
+            timer.state = TimerState.WORK;
+            timer.currentTime = timer.settings.workTime;
+            elements.currentSet.textContent = timer.currentSet;
+            updateTimerStyle();
         }
     }
 }
