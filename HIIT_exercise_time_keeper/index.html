@@ -69,6 +69,30 @@
                     </div>
                 </div>
                 
+                <div class="audio-settings">
+                    <div class="settings-header">
+                        <span class="settings-icon">🔊</span> 音声設定
+                    </div>
+                    
+                    <div class="setting-row">
+                        <label for="audioEnabled">音声通知:</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="audioEnabled" class="toggle-input" checked>
+                            <label for="audioEnabled" class="toggle-label">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-row">
+                        <label for="volumeSlider">音量:</label>
+                        <div class="volume-container">
+                            <input type="range" id="volumeSlider" min="0" max="100" value="70" class="volume-slider">
+                            <span id="volumeDisplay" class="volume-display">70%</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <button id="applySettingsBtn" class="apply-btn">設定を適用</button>
             </div>
         </main>

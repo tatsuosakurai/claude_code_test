@@ -17,7 +17,74 @@ const timer = {
     settings: {
         workTime: 20,
         restTime: 10,
-        totalSets: 8
+        totalSets: 8,
+        audioEnabled: true,
+        volume: 0.7
+    }
+};
+
+// 音声システム
+const audioSystem = {
+    context: null,
+    initialized: false,
+    
+    // 音声コンテキストの初期化
+    async init() {
+        if (this.initialized) return;
+        
+        try {
+            this.context = new (window.AudioContext || window.webkitAudioContext)();
+            this.initialized = true;
+        } catch (error) {
+            console.warn('Audio context creation failed:', error);
+        }
+    },
+    
+    // ビープ音を生成
+    async playBeep(frequency = 440, duration = 0.2, volume = 0.7) {
+        if (!timer.settings.audioEnabled || !this.context) return;
+        
+        try {
+            const oscillator = this.context.createOscillator();
+            const gainNode = this.context.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(this.context.destination);
+            
+            oscillator.frequency.setValueAtTime(frequency, this.context.currentTime);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0, this.context.currentTime);
+            gainNode.gain.linearRampToValueAtTime(volume, this.context.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, this.context.currentTime + duration);
+            
+            oscillator.start(this.context.currentTime);
+            oscillator.stop(this.context.currentTime + duration);
+        } catch (error) {
+            console.warn('Audio playback failed:', error);
+        }
+    },
+    
+    // カウントダウン音（高音、短い）
+    playCountdown() {
+        this.playBeep(880, 0.1, timer.settings.volume);
+    },
+    
+    // 運動開始音（高音、長め）
+    playWorkStart() {
+        this.playBeep(880, 0.3, timer.settings.volume);
+    },
+    
+    // 休憩開始音（低音、長め）
+    playRestStart() {
+        this.playBeep(440, 0.3, timer.settings.volume);
+    },
+    
+    // 完了音（2つの音）
+    async playFinish() {
+        if (!timer.settings.audioEnabled) return;
+        this.playBeep(880, 0.3, timer.settings.volume);
+        setTimeout(() => this.playBeep(1100, 0.3, timer.settings.volume), 300);
     }
 };
 
@@ -36,7 +103,11 @@ const elements = {
     workTimeInput: document.getElementById('workTimeInput'),
     restTimeInput: document.getElementById('restTimeInput'),
     setCountInput: document.getElementById('setCountInput'),
-    applySettingsBtn: document.getElementById('applySettingsBtn')
+    applySettingsBtn: document.getElementById('applySettingsBtn'),
+    // 音声関連の要素
+    audioEnabled: document.getElementById('audioEnabled'),
+    volumeSlider: document.getElementById('volumeSlider'),
+    volumeDisplay: document.getElementById('volumeDisplay')
 };
 
 // 初期表示の更新
@@ -49,6 +120,11 @@ function updateDisplay() {
     elements.workTimeInput.value = timer.settings.workTime;
     elements.restTimeInput.value = timer.settings.restTime;
     elements.setCountInput.value = timer.settings.totalSets;
+    
+    // 音声設定の更新
+    elements.audioEnabled.checked = timer.settings.audioEnabled;
+    elements.volumeSlider.value = Math.round(timer.settings.volume * 100);
+    elements.volumeDisplay.textContent = Math.round(timer.settings.volume * 100) + '%';
 }
 
 // タイマーの状態に応じた表示の更新
@@ -65,11 +141,15 @@ function updateTimerStyle() {
             } else {
                 elements.nextAction.textContent = '次：完了！';
             }
+            // 運動開始音を再生
+            audioSystem.playWorkStart();
             break;
         case TimerState.REST:
             elements.timerDisplay.classList.add('rest');
             elements.status.textContent = '休憩中';
             elements.nextAction.textContent = `次：運動 ${timer.settings.workTime}秒`;
+            // 休憩開始音を再生
+            audioSystem.playRestStart();
             break;
         case TimerState.IDLE:
             elements.status.textContent = '準備完了';
@@ -78,6 +158,8 @@ function updateTimerStyle() {
         case TimerState.FINISHED:
             elements.status.textContent = '完了！';
             elements.nextAction.textContent = 'お疲れさまでした！';
+            // 完了音を再生
+            audioSystem.playFinish();
             break;
     }
 }
@@ -86,6 +168,11 @@ function updateTimerStyle() {
 function countdown() {
     timer.currentTime--;
     elements.timeDisplay.textContent = timer.currentTime;
+    
+    // カウントダウン音（3,2,1）
+    if (timer.currentTime <= 3 && timer.currentTime > 0) {
+        audioSystem.playCountdown();
+    }
     
     if (timer.currentTime <= 0) {
         // 現在の状態に応じて次の状態へ遷移
@@ -113,7 +200,10 @@ function countdown() {
 }
 
 // タイマー開始
-function startTimer() {
+async function startTimer() {
+    // 音声システムを初期化（ユーザーアクションが必要）
+    await audioSystem.init();
+    
     if (timer.state === TimerState.IDLE || timer.state === TimerState.FINISHED) {
         // 初回開始時
         timer.currentSet = 1;
@@ -181,7 +271,13 @@ function validateSettings() {
         return false;
     }
     
-    return { workTime, restTime, totalSets };
+    return { 
+        workTime, 
+        restTime, 
+        totalSets,
+        audioEnabled: elements.audioEnabled.checked,
+        volume: elements.volumeSlider.value / 100
+    };
 }
 
 // 設定の適用
@@ -239,6 +335,12 @@ elements.restTimeInput.addEventListener('input', (e) => {
 elements.setCountInput.addEventListener('input', (e) => {
     if (e.target.value < 1) e.target.value = 1;
     if (e.target.value > 99) e.target.value = 99;
+});
+
+// 音量スライダーの更新
+elements.volumeSlider.addEventListener('input', (e) => {
+    const volume = e.target.value;
+    elements.volumeDisplay.textContent = volume + '%';
 });
 
 // 初期化
