@@ -187,9 +187,9 @@ const elements = {
     setCountInput: document.getElementById('setCountInput'),
     applySettingsBtn: document.getElementById('applySettingsBtn'),
     // 進捗表示関連の要素
-    verticalProgressBar: document.getElementById('verticalProgressBar'),
-    verticalProgress: document.getElementById('verticalProgress'),
-    verticalSetDividers: document.getElementById('verticalSetDividers')
+    horizontalProgressBar: document.getElementById('horizontalProgressBar'),
+    horizontalProgress: document.getElementById('horizontalProgress'),
+    horizontalSetDividers: document.getElementById('horizontalSetDividers')
 };
 
 // 初期表示の更新
@@ -204,8 +204,8 @@ function updateDisplay() {
     // 進捗表示の更新
     updateProgressDisplay();
     
-    // 縦セット区切り線の作成
-    createVerticalSetDividers();
+    // 横セット区切り線の作成
+    createHorizontalSetDividers();
 }
 
 // タイマーの状態に応じた表示の更新
@@ -214,25 +214,25 @@ function updateTimerStyle() {
     
     switch (timer.state) {
         case TimerState.PREPARE:
-            elements.status.textContent = '準備時間';
+            elements.status.textContent = 'READY!!!';
             break;
         case TimerState.WORK:
             elements.timerDisplay.classList.add('work');
-            elements.status.textContent = `運動中 - セット ${timer.currentSet}`;
+            elements.status.textContent = 'WORKING!!!';
             // 運動開始音を再生
             audioSystem.playWorkStart();
             break;
         case TimerState.REST:
             elements.timerDisplay.classList.add('rest');
-            elements.status.textContent = `休憩中 - セット ${timer.currentSet}`;
+            elements.status.textContent = 'REST';
             // 休憩開始音を再生
             audioSystem.playRestStart();
             break;
         case TimerState.IDLE:
-            elements.status.textContent = '準備時間';
+            elements.status.textContent = 'READY!!!';
             break;
         case TimerState.FINISHED:
-            elements.status.textContent = '完了！';
+            elements.status.textContent = 'FINISHED!';
             // 完了音を再生
             audioSystem.playFinish();
             break;
@@ -271,9 +271,9 @@ function updateTimerBackgroundGradient() {
         return;
     }
     
-    // 線形グラデーションで進捗を表示（左から右へ）
+    // 線形グラデーションで進捗を表示（上から下へ）
     elements.timerDisplay.style.background = 
-        `linear-gradient(to right, ${progressColor} ${progress}%, ${remainingColor} ${progress}%)`;
+        `linear-gradient(to bottom, ${progressColor} ${progress}%, ${remainingColor} ${progress}%)`;
 }
 
 // 進捗表示を更新
@@ -299,21 +299,33 @@ function updateProgressDisplay() {
     
     const overallProgressPercent = ((completedSets + currentSetProgress) / timer.settings.totalSets) * 100;
     
-    elements.verticalProgress.style.height = overallProgressPercent + '%';
+    elements.horizontalProgress.style.width = overallProgressPercent + '%';
 }
 
-// 縦セット区切り線を作成
-function createVerticalSetDividers() {
+// 横セット区切り線を作成
+function createHorizontalSetDividers() {
     // 既存の区切り線を削除
-    elements.verticalSetDividers.innerHTML = '';
+    elements.horizontalSetDividers.innerHTML = '';
+    
+    // 各セットの領域にセット番号を表示
+    for (let i = 0; i < timer.settings.totalSets; i++) {
+        const setLabel = document.createElement('div');
+        setLabel.className = 'horizontal-set-label';
+        const leftPosition = (i / timer.settings.totalSets) * 100;
+        const width = (1 / timer.settings.totalSets) * 100;
+        setLabel.style.left = leftPosition + '%';
+        setLabel.style.width = width + '%';
+        setLabel.textContent = i + 1;
+        elements.horizontalSetDividers.appendChild(setLabel);
+    }
     
     // セット数に応じて区切り線を作成
     for (let i = 1; i < timer.settings.totalSets; i++) {
         const dividerLine = document.createElement('div');
-        dividerLine.className = 'vertical-divider-line';
+        dividerLine.className = 'horizontal-divider-line';
         const position = (i / timer.settings.totalSets) * 100;
-        dividerLine.style.bottom = position + '%';
-        elements.verticalSetDividers.appendChild(dividerLine);
+        dividerLine.style.left = position + '%';
+        elements.horizontalSetDividers.appendChild(dividerLine);
     }
 }
 
@@ -492,8 +504,8 @@ function applySettings() {
     updateDisplay();
     updateTimerStyle();
     
-    // 縦セット区切り線を再作成
-    createVerticalSetDividers();
+    // 横セット区切り線を再作成
+    createHorizontalSetDividers();
     
     // 設定パネルを閉じる
     elements.settingsPanel.classList.add('hidden');
