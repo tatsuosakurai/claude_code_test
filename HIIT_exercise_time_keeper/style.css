@@ -40,13 +40,13 @@ body {
 .timer-display.work {
     color: white;
     box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease;
 }
 
 .timer-display.rest {
     color: white;
     box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    transition: box-shadow 0.3s ease;
 }
 
 .status {

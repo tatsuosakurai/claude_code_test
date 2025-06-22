@@ -245,38 +245,35 @@ function updateTimerStyle() {
 // タイマー背景色のグラデーション更新
 function updateTimerBackgroundGradient() {
     let progress = 0;
-    let startColor, endColor;
+    let progressColor, remainingColor;
     
     if (timer.state === TimerState.WORK) {
         const totalTime = timer.settings.workTime;
-        progress = (totalTime - timer.currentTime) / totalTime;
-        // 運動中：薄い赤から濃い赤へ
-        startColor = [255, 180, 180]; // 薄い赤
-        endColor = [255, 107, 107];   // 濃い赤
+        progress = ((totalTime - timer.currentTime) / totalTime) * 100;
+        // 運動中：進行部分は赤、残り部分は薄い赤
+        progressColor = '#ff6b6b';      // 濃い赤
+        remainingColor = '#ffb4b4';     // 薄い赤
     } else if (timer.state === TimerState.REST) {
         const totalTime = timer.settings.restTime;
-        progress = (totalTime - timer.currentTime) / totalTime;
-        // 休憩中：薄い緑から濃い緑へ
-        startColor = [180, 255, 220]; // 薄い緑
-        endColor = [78, 205, 196];    // 濃い緑
+        progress = ((totalTime - timer.currentTime) / totalTime) * 100;
+        // 休憩中：進行部分は緑、残り部分は薄い緑
+        progressColor = '#4ecdc4';      // 濃い緑
+        remainingColor = '#b4f0dc';     // 薄い緑
     } else if (timer.state === TimerState.PREPARE) {
         const totalTime = timer.settings.prepareTime;
-        progress = (totalTime - timer.currentTime) / totalTime;
-        // 準備中：薄いグレーから普通のグレーへ
-        startColor = [245, 245, 245]; // 薄いグレー
-        endColor = [200, 200, 200];   // 普通のグレー
+        progress = ((totalTime - timer.currentTime) / totalTime) * 100;
+        // 準備中：進行部分は濃いグレー、残り部分は薄いグレー
+        progressColor = '#c8c8c8';      // 濃いグレー
+        remainingColor = '#f5f5f5';     // 薄いグレー
     } else {
         // IDLE, FINISHED
-        elements.timerDisplay.style.backgroundColor = '';
+        elements.timerDisplay.style.background = '';
         return;
     }
     
-    // 進捗に応じて色を補間
-    const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * progress);
-    const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * progress);
-    const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * progress);
-    
-    elements.timerDisplay.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    // 線形グラデーションで進捗を表示（左から右へ）
+    elements.timerDisplay.style.background = 
+        `linear-gradient(to right, ${progressColor} ${progress}%, ${remainingColor} ${progress}%)`;
 }
 
 // 進捗表示を更新
