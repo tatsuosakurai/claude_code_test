@@ -189,8 +189,7 @@ const elements = {
     // 進捗表示関連の要素
     verticalProgressBar: document.getElementById('verticalProgressBar'),
     verticalProgress: document.getElementById('verticalProgress'),
-    verticalSetDividers: document.getElementById('verticalSetDividers'),
-    overallProgressText: document.getElementById('overallProgressText')
+    verticalSetDividers: document.getElementById('verticalSetDividers')
 };
 
 // 初期表示の更新
@@ -301,7 +300,6 @@ function updateProgressDisplay() {
     const overallProgressPercent = ((completedSets + currentSetProgress) / timer.settings.totalSets) * 100;
     
     elements.verticalProgress.style.height = overallProgressPercent + '%';
-    elements.overallProgressText.textContent = `セット ${completedSets}/${timer.settings.totalSets} 完了`;
 }
 
 // 縦セット区切り線を作成
