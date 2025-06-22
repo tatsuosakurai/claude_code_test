@@ -33,7 +33,8 @@ const elements = {
     timerDisplay: document.querySelector('.timer-display'),
     workTime: document.getElementById('workTime'),
     restTime: document.getElementById('restTime'),
-    setCount: document.getElementById('setCount')
+    setCount: document.getElementById('setCount'),
+    nextAction: document.getElementById('nextAction')
 };
 
 // 初期表示の更新
@@ -49,21 +50,30 @@ function updateDisplay() {
 // タイマーの状態に応じた表示の更新
 function updateTimerStyle() {
     elements.timerDisplay.classList.remove('work', 'rest');
+    elements.nextAction.textContent = '';
     
     switch (timer.state) {
         case TimerState.WORK:
             elements.timerDisplay.classList.add('work');
             elements.status.textContent = '運動中';
+            if (timer.currentSet < timer.settings.totalSets) {
+                elements.nextAction.textContent = `次：休憩 ${timer.settings.restTime}秒`;
+            } else {
+                elements.nextAction.textContent = '次：完了！';
+            }
             break;
         case TimerState.REST:
             elements.timerDisplay.classList.add('rest');
             elements.status.textContent = '休憩中';
+            elements.nextAction.textContent = `次：運動 ${timer.settings.workTime}秒`;
             break;
         case TimerState.IDLE:
             elements.status.textContent = '準備完了';
+            elements.nextAction.textContent = 'スタートボタンを押してください';
             break;
         case TimerState.FINISHED:
             elements.status.textContent = '完了！';
+            elements.nextAction.textContent = 'お疲れさまでした！';
             break;
     }
 }
