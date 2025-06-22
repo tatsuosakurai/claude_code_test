@@ -177,7 +177,6 @@ const elements = {
     timeDisplay: document.getElementById('timeDisplay'),
     status: document.getElementById('status'),
     startBtn: document.getElementById('startBtn'),
-    stopBtn: document.getElementById('stopBtn'),
     resetBtn: document.getElementById('resetBtn'),
     settingsBtn: document.getElementById('settingsBtn'),
     settingsPanel: document.getElementById('settingsPanel'),
@@ -345,7 +344,6 @@ async function startTimer() {
     
     // ボタンの状態を更新
     elements.startBtn.disabled = true;
-    elements.stopBtn.disabled = false;
     
     // インターバルを開始
     timer.interval = setInterval(countdown, 1000);
@@ -360,7 +358,6 @@ function stopTimer() {
     
     // ボタンの状態を更新
     elements.startBtn.disabled = false;
-    elements.stopBtn.disabled = true;
 }
 
 // タイマーリセット
@@ -460,7 +457,6 @@ function toggleSettings() {
 
 // イベントリスナーの設定
 elements.startBtn.addEventListener('click', startTimer);
-elements.stopBtn.addEventListener('click', stopTimer);
 elements.resetBtn.addEventListener('click', resetTimer);
 elements.settingsBtn.addEventListener('click', toggleSettings);
 elements.applySettingsBtn.addEventListener('click', applySettings);

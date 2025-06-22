@@ -223,13 +223,6 @@ h1 {
     box-shadow: none;
 }
 
-#stopBtn {
-    background-color: #f44336;
-}
-
-#stopBtn:hover:not(:disabled) {
-    background-color: #da190b;
-}
 
 #resetBtn {
     background-color: #ff9800;
