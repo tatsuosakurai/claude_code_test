@@ -12,6 +12,8 @@ const timer = {
     currentTime: 0,
     currentSet: 1,
     interval: null,
+    startTime: null,
+    totalElapsedTime: 0,
     
     // デフォルト設定
     settings: {
@@ -192,7 +194,14 @@ const elements = {
     presetSelect: document.getElementById('presetSelect'),
     presetNameInput: document.getElementById('presetNameInput'),
     savePresetBtn: document.getElementById('savePresetBtn'),
-    savedPresetsList: document.getElementById('savedPresetsList')
+    savedPresetsList: document.getElementById('savedPresetsList'),
+    // 進捗表示関連の要素
+    currentSetProgress: document.getElementById('currentSetProgress'),
+    currentSetProgressText: document.getElementById('currentSetProgressText'),
+    overallProgress: document.getElementById('overallProgress'),
+    overallProgressText: document.getElementById('overallProgressText'),
+    totalElapsedTime: document.getElementById('totalElapsedTime'),
+    estimatedEndTime: document.getElementById('estimatedEndTime')
 };
 
 // 初期表示の更新
@@ -213,6 +222,9 @@ function updateDisplay() {
     
     // プリセット表示の更新
     updateSavedPresetsList();
+    
+    // 進捗表示の更新
+    updateProgressDisplay();
 }
 
 // タイマーの状態に応じた表示の更新
@@ -252,10 +264,60 @@ function updateTimerStyle() {
     }
 }
 
+// 進捗表示を更新
+function updateProgressDisplay() {
+    // 現在のセット進捗
+    const totalTimeInCurrentSet = timer.state === TimerState.WORK ? 
+        timer.settings.workTime : timer.settings.restTime;
+    const elapsedTimeInCurrentSet = totalTimeInCurrentSet - timer.currentTime;
+    const currentSetProgressPercent = timer.state === TimerState.IDLE ? 0 : 
+        (elapsedTimeInCurrentSet / totalTimeInCurrentSet) * 100;
+    
+    elements.currentSetProgress.style.width = currentSetProgressPercent + '%';
+    elements.currentSetProgressText.textContent = Math.round(currentSetProgressPercent) + '%';
+    
+    // 全体進捗
+    const completedSets = timer.currentSet - 1;
+    const currentSetProgress = timer.state === TimerState.IDLE ? 0 : currentSetProgressPercent / 100;
+    const overallProgressPercent = ((completedSets + currentSetProgress) / timer.settings.totalSets) * 100;
+    
+    elements.overallProgress.style.width = overallProgressPercent + '%';
+    elements.overallProgressText.textContent = `セット ${completedSets}/${timer.settings.totalSets} 完了`;
+    
+    // 総経過時間
+    if (timer.startTime && timer.interval) {
+        timer.totalElapsedTime = Math.floor((Date.now() - timer.startTime) / 1000);
+    }
+    elements.totalElapsedTime.textContent = formatTime(timer.totalElapsedTime);
+    
+    // 予想終了時間
+    const estimatedTotalTime = calculateEstimatedTotalTime();
+    elements.estimatedEndTime.textContent = formatTime(estimatedTotalTime);
+}
+
+// 予想総時間を計算
+function calculateEstimatedTotalTime() {
+    const singleSetTime = timer.settings.workTime + timer.settings.restTime;
+    const totalSetTime = singleSetTime * timer.settings.totalSets;
+    
+    // 最後のセットは休憩時間を含まない
+    return totalSetTime - timer.settings.restTime;
+}
+
+// 時間をMM:SS形式にフォーマット
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
 // カウントダウン処理
 function countdown() {
     timer.currentTime--;
     elements.timeDisplay.textContent = timer.currentTime;
+    
+    // 進捗表示を更新
+    updateProgressDisplay();
     
     // カウントダウン音（3,2,1）
     if (timer.currentTime <= 3 && timer.currentTime > 0) {
@@ -297,7 +359,12 @@ async function startTimer() {
         timer.currentSet = 1;
         timer.state = TimerState.WORK;
         timer.currentTime = timer.settings.workTime;
+        timer.startTime = Date.now();
+        timer.totalElapsedTime = 0;
         updateTimerStyle();
+    } else if (!timer.startTime) {
+        // 一時停止からの再開時で開始時間が設定されていない場合
+        timer.startTime = Date.now() - timer.totalElapsedTime * 1000;
     }
     
     // ボタンの状態を更新
@@ -326,6 +393,8 @@ function resetTimer() {
     timer.state = TimerState.IDLE;
     timer.currentSet = 1;
     timer.currentTime = timer.settings.workTime;
+    timer.startTime = null;
+    timer.totalElapsedTime = 0;
     updateDisplay();
     updateTimerStyle();
 }
@@ -386,6 +455,8 @@ function applySettings() {
     timer.state = TimerState.IDLE;
     timer.currentSet = 1;
     timer.currentTime = timer.settings.workTime;
+    timer.startTime = null;
+    timer.totalElapsedTime = 0;
     
     // 表示を更新
     updateDisplay();
@@ -498,6 +569,8 @@ function loadPreset(preset) {
     timer.state = TimerState.IDLE;
     timer.currentSet = 1;
     timer.currentTime = timer.settings.workTime;
+    timer.startTime = null;
+    timer.totalElapsedTime = 0;
     
     // 表示を更新
     updateDisplay();
