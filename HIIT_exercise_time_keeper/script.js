@@ -176,8 +176,6 @@ const presetSystem = {
 const elements = {
     timeDisplay: document.getElementById('timeDisplay'),
     status: document.getElementById('status'),
-    currentSet: document.getElementById('currentSet'),
-    totalSets: document.getElementById('totalSets'),
     startBtn: document.getElementById('startBtn'),
     stopBtn: document.getElementById('stopBtn'),
     resetBtn: document.getElementById('resetBtn'),
@@ -198,8 +196,6 @@ const elements = {
 // 初期表示の更新
 function updateDisplay() {
     elements.timeDisplay.textContent = timer.currentTime;
-    elements.currentSet.textContent = timer.currentSet;
-    elements.totalSets.textContent = timer.settings.totalSets;
     
     // 設定入力フィールドの値を更新
     elements.workTimeInput.value = timer.settings.workTime;
@@ -308,7 +304,6 @@ function countdown() {
             timer.state = TimerState.WORK;
             timer.currentSet = 1;
             timer.currentTime = timer.settings.workTime;
-            elements.currentSet.textContent = timer.currentSet;
             updateTimerStyle();
         } else if (timer.state === TimerState.WORK) {
             if (timer.currentSet === timer.settings.totalSets) {
@@ -325,7 +320,6 @@ function countdown() {
             timer.currentSet++;
             timer.state = TimerState.WORK;
             timer.currentTime = timer.settings.workTime;
-            elements.currentSet.textContent = timer.currentSet;
             updateTimerStyle();
         }
     }
