@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>HIITタイマー</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -26,13 +28,13 @@
 
             <div class="controls">
                 <button id="startBtn" class="control-btn primary">
-                    <span class="btn-text">開始</span>
+                    <span class="btn-icon">▶</span>
                 </button>
                 <button id="resetBtn" class="control-btn">
-                    <span class="btn-text">リセット</span>
+                    <span class="btn-icon">↺</span>
                 </button>
                 <button id="settingsBtn" class="control-btn settings-toggle">
-                    <span class="btn-text">設定</span>
+                    <span class="btn-icon">⚙</span>
                 </button>
             </div>
 
@@ -66,6 +68,7 @@
         </main>
     </div>
 
+    <script src="viewport-height.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
