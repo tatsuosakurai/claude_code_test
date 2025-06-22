@@ -192,8 +192,7 @@ const elements = {
     applySettingsBtn: document.getElementById('applySettingsBtn'),
     // 進捗表示関連の要素
     overallProgress: document.getElementById('overallProgress'),
-    overallProgressText: document.getElementById('overallProgressText'),
-    totalElapsedTime: document.getElementById('totalElapsedTime')
+    overallProgressText: document.getElementById('overallProgressText')
 };
 
 // 初期表示の更新
@@ -267,12 +266,6 @@ function updateProgressDisplay() {
     
     elements.overallProgress.style.width = overallProgressPercent + '%';
     elements.overallProgressText.textContent = `セット ${completedSets}/${timer.settings.totalSets} 完了`;
-    
-    // 総経過時間
-    if (timer.startTime && timer.interval) {
-        timer.totalElapsedTime = Math.floor((Date.now() - timer.startTime) / 1000);
-    }
-    elements.totalElapsedTime.textContent = formatTime(timer.totalElapsedTime);
 }
 
 // 運動のハーフタイムで通知
