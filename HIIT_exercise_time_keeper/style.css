@@ -162,15 +162,93 @@ h1 {
 }
 
 .settings {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 30px;
 }
 
-.setting-info {
+.settings-header {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.settings-icon {
+    font-size: 20px;
+}
+
+.setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.setting-row label {
     font-size: 16px;
+    color: #555;
+    font-weight: 500;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.time-input {
+    width: 80px;
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.time-input:invalid {
+    border-color: #ff6b6b;
+}
+
+.input-unit {
+    font-size: 14px;
     color: #666;
-    margin: 5px 0;
+}
+
+.apply-btn {
+    width: 100%;
+    padding: 12px 24px;
+    margin-top: 20px;
+    background-color: #667eea;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.apply-btn:hover {
+    background-color: #5a67d8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.apply-btn:active {
+    transform: translateY(0);
 }
 
 @media (max-width: 480px) {
@@ -199,5 +277,19 @@ h1 {
     
     .timer-display {
         min-height: 300px;
+    }
+    
+    .settings {
+        padding: 15px;
+    }
+    
+    .setting-row {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+    
+    .input-group {
+        justify-content: center;
     }
 }
