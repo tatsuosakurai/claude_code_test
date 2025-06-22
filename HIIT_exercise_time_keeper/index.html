@@ -10,19 +10,18 @@
     <div class="container">
 
         <main>
-            <div class="unified-timer-section">
-                <div class="timer-display">
+            <div class="timer-display">
+                <div class="vertical-progress-bar" id="verticalProgressBar">
+                    <div class="vertical-progress-fill" id="verticalProgress"></div>
+                    <div class="vertical-set-dividers" id="verticalSetDividers"></div>
+                </div>
+                
+                <div class="timer-content">
                     <div class="status" id="status">準備時間</div>
                     <div class="time-display">
                         <span id="timeDisplay">10</span>
                     </div>
                     <div class="time-unit">秒</div>
-                </div>
-
-                <div class="progress-container">
-                    <div class="progress-bar" id="progressBar">
-                        <div class="progress-fill overall" id="overallProgress"></div>
-                    </div>
                     <div class="progress-text" id="overallProgressText">セット 0/9 完了</div>
                 </div>
             </div>
