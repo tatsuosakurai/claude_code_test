@@ -22,25 +22,7 @@ body {
     max-width: 400px;
 }
 
-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
 
-h1 {
-    font-size: 28px;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.set-counter {
-    font-size: 20px;
-    color: #666;
-    background-color: #f5f5f5;
-    padding: 10px 20px;
-    border-radius: 10px;
-    display: inline-block;
-}
 
 .timer-display {
     text-align: center;
