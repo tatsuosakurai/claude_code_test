@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIITタイマー</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HIITタイマー</h1>
+            <div class="set-counter">
+                セット <span id="currentSet">1</span> / <span id="totalSets">8</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="timer-display">
+                <div class="status" id="status">準備完了</div>
+                <div class="time-display">
+                    <span id="timeDisplay">20</span>
+                </div>
+                <div class="time-unit">秒</div>
+            </div>
+
+            <div class="controls">
+                <button id="startBtn" class="control-btn">開始</button>
+                <button id="stopBtn" class="control-btn" disabled>停止</button>
+                <button id="resetBtn" class="control-btn">リセット</button>
+            </div>
+
+            <div class="settings">
+                <div class="setting-info">
+                    運動: <span id="workTime">20</span>秒 
+                    休憩: <span id="restTime">10</span>秒
+                </div>
+                <div class="setting-info">
+                    セット数: <span id="setCount">8</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
