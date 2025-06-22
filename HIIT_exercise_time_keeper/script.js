@@ -31,10 +31,12 @@ const elements = {
     stopBtn: document.getElementById('stopBtn'),
     resetBtn: document.getElementById('resetBtn'),
     timerDisplay: document.querySelector('.timer-display'),
-    workTime: document.getElementById('workTime'),
-    restTime: document.getElementById('restTime'),
-    setCount: document.getElementById('setCount'),
-    nextAction: document.getElementById('nextAction')
+    nextAction: document.getElementById('nextAction'),
+    // 設定関連の要素
+    workTimeInput: document.getElementById('workTimeInput'),
+    restTimeInput: document.getElementById('restTimeInput'),
+    setCountInput: document.getElementById('setCountInput'),
+    applySettingsBtn: document.getElementById('applySettingsBtn')
 };
 
 // 初期表示の更新
@@ -42,9 +44,11 @@ function updateDisplay() {
     elements.timeDisplay.textContent = timer.currentTime;
     elements.currentSet.textContent = timer.currentSet;
     elements.totalSets.textContent = timer.settings.totalSets;
-    elements.workTime.textContent = timer.settings.workTime;
-    elements.restTime.textContent = timer.settings.restTime;
-    elements.setCount.textContent = timer.settings.totalSets;
+    
+    // 設定入力フィールドの値を更新
+    elements.workTimeInput.value = timer.settings.workTime;
+    elements.restTimeInput.value = timer.settings.restTime;
+    elements.setCountInput.value = timer.settings.totalSets;
 }
 
 // タイマーの状態に応じた表示の更新
@@ -155,10 +159,87 @@ function finishTimer() {
     updateTimerStyle();
 }
 
+// 設定の検証
+function validateSettings() {
+    const workTime = parseInt(elements.workTimeInput.value);
+    const restTime = parseInt(elements.restTimeInput.value);
+    const totalSets = parseInt(elements.setCountInput.value);
+    
+    // 値の検証
+    if (isNaN(workTime) || workTime < 1 || workTime > 999) {
+        alert('運動時間は1〜999の間で入力してください');
+        return false;
+    }
+    
+    if (isNaN(restTime) || restTime < 1 || restTime > 999) {
+        alert('休憩時間は1〜999の間で入力してください');
+        return false;
+    }
+    
+    if (isNaN(totalSets) || totalSets < 1 || totalSets > 99) {
+        alert('セット数は1〜99の間で入力してください');
+        return false;
+    }
+    
+    return { workTime, restTime, totalSets };
+}
+
+// 設定の適用
+function applySettings() {
+    // タイマーが動作中の場合は適用しない
+    if (timer.interval) {
+        alert('タイマー動作中は設定を変更できません');
+        return;
+    }
+    
+    const validatedSettings = validateSettings();
+    if (!validatedSettings) return;
+    
+    // 設定を更新
+    timer.settings = validatedSettings;
+    
+    // タイマーをリセット
+    timer.state = TimerState.IDLE;
+    timer.currentSet = 1;
+    timer.currentTime = timer.settings.workTime;
+    
+    // 表示を更新
+    updateDisplay();
+    updateTimerStyle();
+    
+    // フィードバック
+    const applyBtn = elements.applySettingsBtn;
+    const originalText = applyBtn.textContent;
+    applyBtn.textContent = '✓ 適用しました';
+    applyBtn.style.backgroundColor = '#4ecdc4';
+    
+    setTimeout(() => {
+        applyBtn.textContent = originalText;
+        applyBtn.style.backgroundColor = '';
+    }, 1500);
+}
+
 // イベントリスナーの設定
 elements.startBtn.addEventListener('click', startTimer);
 elements.stopBtn.addEventListener('click', stopTimer);
 elements.resetBtn.addEventListener('click', resetTimer);
+elements.applySettingsBtn.addEventListener('click', applySettings);
+
+// 入力フィールドのリアルタイムバリデーション
+elements.workTimeInput.addEventListener('input', (e) => {
+    if (e.target.value < 1) e.target.value = 1;
+    if (e.target.value > 999) e.target.value = 999;
+});
+
+elements.restTimeInput.addEventListener('input', (e) => {
+    if (e.target.value < 1) e.target.value = 1;
+    if (e.target.value > 999) e.target.value = 999;
+});
+
+elements.setCountInput.addEventListener('input', (e) => {
+    if (e.target.value < 1) e.target.value = 1;
+    if (e.target.value > 99) e.target.value = 99;
+});
 
 // 初期化
 updateDisplay();

@@ -41,13 +41,35 @@
             </div>
 
             <div class="settings">
-                <div class="setting-info">
-                    運動: <span id="workTime">20</span>秒 
-                    休憩: <span id="restTime">10</span>秒
+                <div class="settings-header">
+                    <span class="settings-icon">⚙</span> 設定
                 </div>
-                <div class="setting-info">
-                    セット数: <span id="setCount">8</span>
+                
+                <div class="setting-row">
+                    <label for="workTimeInput">運動時間:</label>
+                    <div class="input-group">
+                        <input type="number" id="workTimeInput" min="1" max="999" value="20" class="time-input">
+                        <span class="input-unit">秒</span>
+                    </div>
                 </div>
+                
+                <div class="setting-row">
+                    <label for="restTimeInput">休憩時間:</label>
+                    <div class="input-group">
+                        <input type="number" id="restTimeInput" min="1" max="999" value="10" class="time-input">
+                        <span class="input-unit">秒</span>
+                    </div>
+                </div>
+                
+                <div class="setting-row">
+                    <label for="setCountInput">セット数:</label>
+                    <div class="input-group">
+                        <input type="number" id="setCountInput" min="1" max="99" value="8" class="time-input">
+                        <span class="input-unit">セット</span>
+                    </div>
+                </div>
+                
+                <button id="applySettingsBtn" class="apply-btn">設定を適用</button>
             </div>
         </main>
     </div>
