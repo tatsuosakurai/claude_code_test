@@ -181,6 +181,7 @@ const elements = {
     settingsBtn: document.getElementById('settingsBtn'),
     settingsPanel: document.getElementById('settingsPanel'),
     timerDisplay: document.querySelector('.timer-display'),
+    unifiedSection: document.querySelector('.unified-timer-section'),
     // 設定関連の要素
     workTimeInput: document.getElementById('workTimeInput'),
     prepareTimeInput: document.getElementById('prepareTimeInput'),
@@ -211,6 +212,7 @@ function updateDisplay() {
 // タイマーの状態に応じた表示の更新
 function updateTimerStyle() {
     elements.timerDisplay.classList.remove('work', 'rest');
+    elements.unifiedSection.classList.remove('work', 'rest');
     
     switch (timer.state) {
         case TimerState.PREPARE:
@@ -218,12 +220,14 @@ function updateTimerStyle() {
             break;
         case TimerState.WORK:
             elements.timerDisplay.classList.add('work');
+            elements.unifiedSection.classList.add('work');
             elements.status.textContent = `運動中 - セット ${timer.currentSet}`;
             // 運動開始音を再生
             audioSystem.playWorkStart();
             break;
         case TimerState.REST:
             elements.timerDisplay.classList.add('rest');
+            elements.unifiedSection.classList.add('rest');
             elements.status.textContent = `休憩中 - セット ${timer.currentSet}`;
             // 休憩開始音を再生
             audioSystem.playRestStart();
