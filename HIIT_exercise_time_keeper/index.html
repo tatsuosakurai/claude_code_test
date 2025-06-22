@@ -25,6 +25,35 @@
                 <div class="next-action" id="nextAction"></div>
             </div>
 
+            <div class="progress-section">
+                <div class="progress-container">
+                    <div class="progress-label">現在のセット進捗</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="currentSetProgress"></div>
+                    </div>
+                    <div class="progress-text" id="currentSetProgressText">0%</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-label">全体進捗</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill overall" id="overallProgress"></div>
+                    </div>
+                    <div class="progress-text" id="overallProgressText">セット 1/8 完了</div>
+                </div>
+                
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-label">総経過時間</div>
+                        <div class="stat-value" id="totalElapsedTime">00:00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">予想終了時間</div>
+                        <div class="stat-value" id="estimatedEndTime">04:00</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="controls">
                 <button id="startBtn" class="control-btn">
                     <span class="btn-icon">▶</span>
