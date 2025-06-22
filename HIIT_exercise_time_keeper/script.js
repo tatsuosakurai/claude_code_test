@@ -240,7 +240,7 @@ function updateTimerStyle() {
             break;
         case TimerState.IDLE:
             elements.status.textContent = '準備時間';
-            elements.nextAction.textContent = 'スタートボタンを押してください';
+            elements.nextAction.textContent = '';
             break;
         case TimerState.FINISHED:
             elements.status.textContent = '完了！';
