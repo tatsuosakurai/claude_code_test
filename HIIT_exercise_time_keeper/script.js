@@ -189,6 +189,7 @@ const elements = {
     setCountInput: document.getElementById('setCountInput'),
     applySettingsBtn: document.getElementById('applySettingsBtn'),
     // 進捗表示関連の要素
+    progressBar: document.getElementById('progressBar'),
     overallProgress: document.getElementById('overallProgress'),
     overallProgressText: document.getElementById('overallProgressText')
 };
@@ -204,6 +205,9 @@ function updateDisplay() {
     
     // 進捗表示の更新
     updateProgressDisplay();
+    
+    // セット区切り線の作成
+    createSetDividers();
 }
 
 // タイマーの状態に応じた表示の更新
@@ -267,6 +271,30 @@ function updateProgressDisplay() {
     
     elements.overallProgress.style.width = overallProgressPercent + '%';
     elements.overallProgressText.textContent = `セット ${completedSets}/${timer.settings.totalSets} 完了`;
+}
+
+// セット区切り線を作成
+function createSetDividers() {
+    // 既存の区切り線を削除
+    const existingDividers = elements.progressBar.querySelector('.set-dividers');
+    if (existingDividers) {
+        existingDividers.remove();
+    }
+    
+    // 新しい区切り線コンテナを作成
+    const dividersContainer = document.createElement('div');
+    dividersContainer.className = 'set-dividers';
+    
+    // セット数に応じて区切り線を作成
+    for (let i = 1; i < timer.settings.totalSets; i++) {
+        const dividerLine = document.createElement('div');
+        dividerLine.className = 'set-divider-line';
+        const position = (i / timer.settings.totalSets) * 100;
+        dividerLine.style.left = position + '%';
+        dividersContainer.appendChild(dividerLine);
+    }
+    
+    elements.progressBar.appendChild(dividersContainer);
 }
 
 // 運動のハーフタイムで通知
@@ -440,6 +468,9 @@ function applySettings() {
     // 表示を更新
     updateDisplay();
     updateTimerStyle();
+    
+    // セット区切り線を再作成
+    createSetDividers();
     
     // 設定パネルを閉じる
     elements.settingsPanel.classList.add('hidden');
