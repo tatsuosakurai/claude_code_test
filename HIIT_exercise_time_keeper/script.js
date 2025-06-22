@@ -176,7 +176,6 @@ const presetSystem = {
 const elements = {
     timeDisplay: document.getElementById('timeDisplay'),
     status: document.getElementById('status'),
-    setNumber: document.getElementById('setNumber'),
     startBtn: document.getElementById('startBtn'),
     resetBtn: document.getElementById('resetBtn'),
     settingsBtn: document.getElementById('settingsBtn'),
@@ -218,13 +217,11 @@ function updateTimerStyle() {
     switch (timer.state) {
         case TimerState.PREPARE:
             elements.status.textContent = '準備時間';
-            elements.setNumber.textContent = '準備';
             elements.nextAction.textContent = '準備してください';
             break;
         case TimerState.WORK:
             elements.timerDisplay.classList.add('work');
-            elements.status.textContent = '運動中';
-            elements.setNumber.textContent = `セット ${timer.currentSet}`;
+            elements.status.textContent = `運動中 - セット ${timer.currentSet}`;
             if (timer.currentSet < timer.settings.totalSets) {
                 elements.nextAction.textContent = `次：休憩 ${timer.settings.restTime}秒`;
             } else {
@@ -235,20 +232,17 @@ function updateTimerStyle() {
             break;
         case TimerState.REST:
             elements.timerDisplay.classList.add('rest');
-            elements.status.textContent = '休憩中';
-            elements.setNumber.textContent = `セット ${timer.currentSet}`;
+            elements.status.textContent = `休憩中 - セット ${timer.currentSet}`;
             elements.nextAction.textContent = `次：セット ${timer.currentSet + 1}`;
             // 休憩開始音を再生
             audioSystem.playRestStart();
             break;
         case TimerState.IDLE:
             elements.status.textContent = '準備時間';
-            elements.setNumber.textContent = '準備';
             elements.nextAction.textContent = '';
             break;
         case TimerState.FINISHED:
             elements.status.textContent = '完了！';
-            elements.setNumber.textContent = '完了';
             elements.nextAction.textContent = 'お疲れさまでした！';
             // 完了音を再生
             audioSystem.playFinish();
