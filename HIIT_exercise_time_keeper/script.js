@@ -19,7 +19,7 @@ const timer = {
     settings: {
         workTime: 20,
         restTime: 10,
-        totalSets: 8,
+        totalSets: 9,
         audioEnabled: true,
         volume: 0.7
     }
@@ -98,7 +98,7 @@ const presetSystem = {
             name: 'タバタ式',
             workTime: 20,
             restTime: 10,
-            totalSets: 8,
+            totalSets: 9,
             audioEnabled: true,
             volume: 0.7
         },
