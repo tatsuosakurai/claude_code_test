@@ -319,14 +319,20 @@ function createHorizontalSetDividers() {
         elements.horizontalSetDividers.appendChild(setLabel);
     }
     
-    // セット数に応じて区切り線を作成
-    for (let i = 1; i < timer.settings.totalSets; i++) {
-        const dividerLine = document.createElement('div');
-        dividerLine.className = 'horizontal-divider-line';
-        const position = (i / timer.settings.totalSets) * 100;
-        dividerLine.style.left = position + '%';
-        elements.horizontalSetDividers.appendChild(dividerLine);
-    }
+    // セット毎のグラデーション背景を作成
+    updateSetGradientBackground();
+}
+
+// セット毎のグラデーション背景を更新
+function updateSetGradientBackground() {
+    const progressBar = elements.horizontalProgressBar;
+    const totalSets = timer.settings.totalSets;
+    
+    // シンプルなグラデーション（青から紫へ）
+    const startColor = 'rgba(102, 126, 234, 0.4)';  // 青
+    const endColor = 'rgba(118, 75, 162, 0.4)';     // 紫
+    
+    progressBar.style.background = `linear-gradient(to right, ${startColor}, ${endColor})`;
 }
 
 // 運動のハーフタイムで通知
