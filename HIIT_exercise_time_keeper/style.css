@@ -310,6 +310,152 @@ h1 {
     color: #666;
     min-width: 35px;
 }
+
+.preset-settings {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.preset-select {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.preset-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.preset-save {
+    margin-top: 15px;
+}
+
+.preset-name-input {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    flex: 1;
+    transition: all 0.3s ease;
+}
+
+.preset-name-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.save-preset-btn {
+    padding: 8px 16px;
+    margin-top: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.save-preset-btn:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+.saved-presets {
+    margin-top: 20px;
+}
+
+.saved-presets-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.saved-presets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.saved-preset-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.saved-preset-item:hover {
+    background-color: #e9ecef;
+}
+
+.preset-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.preset-info {
+    font-size: 12px;
+    color: #666;
+}
+
+.preset-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.preset-load-btn {
+    padding: 4px 8px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.preset-load-btn:hover {
+    background-color: #0056b3;
+}
+
+.preset-delete-btn {
+    padding: 4px 8px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.preset-delete-btn:hover {
+    background-color: #c82333;
+}
+
+.no-presets {
+    font-size: 14px;
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 15px;
+}
 .apply-btn {
     width: 100%;
     padding: 12px 24px;
@@ -382,5 +528,13 @@ h1 {
     
     .toggle-container {
         align-self: center;
+    }
+    
+    .preset-select {
+        width: 100%;
+    }
+    
+    .preset-name-input {
+        width: 100%;
     }
 }
