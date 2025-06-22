@@ -38,15 +38,15 @@ body {
 }
 
 .timer-display.work {
-    background-color: #ff6b6b;
     color: white;
     box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .timer-display.rest {
-    background-color: #4ecdc4;
     color: white;
     box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .status {

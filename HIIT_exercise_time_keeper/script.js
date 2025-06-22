@@ -237,6 +237,46 @@ function updateTimerStyle() {
             audioSystem.playFinish();
             break;
     }
+    
+    // 初期背景色を設定
+    updateTimerBackgroundGradient();
+}
+
+// タイマー背景色のグラデーション更新
+function updateTimerBackgroundGradient() {
+    let progress = 0;
+    let startColor, endColor;
+    
+    if (timer.state === TimerState.WORK) {
+        const totalTime = timer.settings.workTime;
+        progress = (totalTime - timer.currentTime) / totalTime;
+        // 運動中：薄い赤から濃い赤へ
+        startColor = [255, 180, 180]; // 薄い赤
+        endColor = [255, 107, 107];   // 濃い赤
+    } else if (timer.state === TimerState.REST) {
+        const totalTime = timer.settings.restTime;
+        progress = (totalTime - timer.currentTime) / totalTime;
+        // 休憩中：薄い緑から濃い緑へ
+        startColor = [180, 255, 220]; // 薄い緑
+        endColor = [78, 205, 196];    // 濃い緑
+    } else if (timer.state === TimerState.PREPARE) {
+        const totalTime = timer.settings.prepareTime;
+        progress = (totalTime - timer.currentTime) / totalTime;
+        // 準備中：薄いグレーから普通のグレーへ
+        startColor = [245, 245, 245]; // 薄いグレー
+        endColor = [200, 200, 200];   // 普通のグレー
+    } else {
+        // IDLE, FINISHED
+        elements.timerDisplay.style.backgroundColor = '';
+        return;
+    }
+    
+    // 進捗に応じて色を補間
+    const r = Math.round(startColor[0] + (endColor[0] - startColor[0]) * progress);
+    const g = Math.round(startColor[1] + (endColor[1] - startColor[1]) * progress);
+    const b = Math.round(startColor[2] + (endColor[2] - startColor[2]) * progress);
+    
+    elements.timerDisplay.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
 }
 
 // 進捗表示を更新
@@ -314,6 +354,9 @@ function countdown() {
     
     // 進捗表示を更新
     updateProgressDisplay();
+    
+    // 背景色のグラデーション更新
+    updateTimerBackgroundGradient();
     
     // ハーフタイム通知をチェック
     checkHalfTime();
