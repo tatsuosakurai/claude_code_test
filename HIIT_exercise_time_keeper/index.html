@@ -22,12 +22,22 @@
                     <span id="timeDisplay">20</span>
                 </div>
                 <div class="time-unit">秒</div>
+                <div class="next-action" id="nextAction"></div>
             </div>
 
             <div class="controls">
-                <button id="startBtn" class="control-btn">開始</button>
-                <button id="stopBtn" class="control-btn" disabled>停止</button>
-                <button id="resetBtn" class="control-btn">リセット</button>
+                <button id="startBtn" class="control-btn">
+                    <span class="btn-icon">▶</span>
+                    <span class="btn-text">開始</span>
+                </button>
+                <button id="stopBtn" class="control-btn" disabled>
+                    <span class="btn-icon">⏸</span>
+                    <span class="btn-text">停止</span>
+                </button>
+                <button id="resetBtn" class="control-btn">
+                    <span class="btn-icon">↻</span>
+                    <span class="btn-text">リセット</span>
+                </button>
             </div>
 
             <div class="settings">
