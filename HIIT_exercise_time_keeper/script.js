@@ -495,11 +495,13 @@ function validateSettings() {
     const totalSets = menu.length || 9; // メニューの数に応じてセット数を決定
     
     return { 
-        ...timer.settings, // 既存の設定をコピー
         workTime, 
         prepareTime, 
         totalSets,
-        menu
+        menu,
+        restTime: timer.settings.restTime,
+        audioEnabled: timer.settings.audioEnabled,
+        volume: timer.settings.volume
     };
 }
 
