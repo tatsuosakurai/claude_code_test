@@ -23,6 +23,7 @@
                     <div class="time-display">
                         <span id="timeDisplay">10</span>
                     </div>
+                    <div class="menu-display" id="menuDisplay"></div>
                 </div>
             </div>
 
@@ -56,11 +57,9 @@
                 </div>
                 
                 <div class="setting-row">
-                    <label for="setCountInput">セット数:</label>
-                    <div class="input-group">
-                        <input type="number" id="setCountInput" min="1" max="20" value="9" class="time-input">
-                        <span class="input-unit">セット</span>
-                    </div>
+                    <label for="menuInput">メニュー:</label>
+                    <textarea id="menuInput" rows="3" placeholder="例: スクワット プランク 腕立て伏せ...
+スペースか改行で区切ってください。"></textarea>
                 </div>
                 
                 <button id="applySettingsBtn" class="apply-btn">設定を適用</button>
