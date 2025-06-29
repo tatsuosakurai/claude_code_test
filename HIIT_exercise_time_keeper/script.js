@@ -363,8 +363,8 @@ function updateSetGradientBackground() {
     for (let i = 0; i < totalSets; i++) {
         // 青系の色相（200-220度）で、明度を変化させる
         const hue = 210;
-        const saturation = 20;  // 彩度を下げて薄い色に
-        const lightness = 95 - (i * 40 / totalSets); // 95%から55%まで変化（より明度差を大きく）
+        const saturation = 25;  // 彩度を少し上げて視認性を向上
+        const lightness = 85 - (i * 35 / totalSets); // 85%から50%まで変化（最初から暗めに）
         colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
     }
     
