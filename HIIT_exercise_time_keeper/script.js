@@ -23,7 +23,8 @@ const timer = {
         prepareTime: 10,
         totalSets: 9,
         audioEnabled: true,
-        volume: 0.7
+        volume: 0.7,
+        menu: []
     }
 };
 
@@ -185,11 +186,14 @@ const elements = {
     workTimeInput: document.getElementById('workTimeInput'),
     prepareTimeInput: document.getElementById('prepareTimeInput'),
     setCountInput: document.getElementById('setCountInput'),
+    menuInput: document.getElementById('menuInput'),
     applySettingsBtn: document.getElementById('applySettingsBtn'),
     // 進捗表示関連の要素
     horizontalProgressBar: document.getElementById('horizontalProgressBar'),
     horizontalProgress: document.getElementById('horizontalProgress'),
-    horizontalSetDividers: document.getElementById('horizontalSetDividers')
+    horizontalSetDividers: document.getElementById('horizontalSetDividers'),
+    // メニュー表示
+    menuDisplay: document.getElementById('menuDisplay')
 };
 
 // 初期表示の更新
@@ -200,6 +204,7 @@ function updateDisplay() {
     elements.workTimeInput.value = timer.settings.workTime;
     elements.prepareTimeInput.value = timer.settings.prepareTime;
     elements.setCountInput.value = timer.settings.totalSets;
+    elements.menuInput.value = timer.settings.menu.join(' ');
     
     // 進捗表示の更新
     updateProgressDisplay();
@@ -215,24 +220,37 @@ function updateTimerStyle() {
     switch (timer.state) {
         case TimerState.PREPARE:
             elements.status.textContent = 'READY!!!';
+            elements.menuDisplay.textContent = '';
             break;
         case TimerState.WORK:
             elements.timerDisplay.classList.add('work');
-            elements.status.textContent = 'WORKING!!!';
+            if (timer.settings.menu.length > 0 && timer.currentSet > 0 && timer.settings.menu[timer.currentSet - 1]) {
+                elements.status.textContent = timer.settings.menu[timer.currentSet - 1];
+            } else {
+                elements.status.textContent = 'WORKING!!!';
+            }
+            elements.menuDisplay.textContent = '';
             // 運動開始音を再生
             audioSystem.playWorkStart();
             break;
         case TimerState.REST:
             elements.timerDisplay.classList.add('rest');
             elements.status.textContent = 'REST';
+            if (timer.settings.menu.length > 0 && timer.currentSet < timer.settings.totalSets) {
+                elements.menuDisplay.textContent = `次は: ${timer.settings.menu[timer.currentSet] || ''}`;
+            } else {
+                elements.menuDisplay.textContent = '';
+            }
             // 休憩開始音を再生
             audioSystem.playRestStart();
             break;
         case TimerState.IDLE:
             elements.status.textContent = 'READY!!!';
+            elements.menuDisplay.textContent = '';
             break;
         case TimerState.FINISHED:
             elements.status.textContent = 'FINISHED!';
+            elements.menuDisplay.textContent = '';
             // 完了音を再生
             audioSystem.playFinish();
             break;
@@ -459,6 +477,7 @@ function validateSettings() {
     const workTime = parseInt(elements.workTimeInput.value);
     const prepareTime = parseInt(elements.prepareTimeInput.value);
     const totalSets = parseInt(elements.setCountInput.value);
+    const menuText = elements.menuInput.value.trim();
     
     // 値の検証
     if (isNaN(workTime) || workTime < 1 || workTime > 999) {
@@ -475,13 +494,15 @@ function validateSettings() {
         alert('セット数は1〜99の間で入力してください');
         return false;
     }
+
+    const menu = menuText.split(/[\s\n,]+/).filter(item => item).slice(0, 9);
     
     return { 
+        ...timer.settings, // 既存の設定をコピー
         workTime, 
         prepareTime, 
         totalSets,
-        audioEnabled: timer.settings.audioEnabled,
-        volume: timer.settings.volume
+        menu
     };
 }
 
@@ -498,6 +519,9 @@ function applySettings() {
     
     // 設定を更新
     timer.settings = validatedSettings;
+    
+    // 設定を保存
+    saveSettings();
     
     // タイマーをリセット
     timer.state = TimerState.IDLE;
@@ -556,6 +580,30 @@ elements.setCountInput.addEventListener('input', (e) => {
 });
 
 
+// 設定をLocalStorageから読み込む
+function loadSettings() {
+    try {
+        const saved = localStorage.getItem('hiit-timer-settings');
+        if (saved) {
+            const loadedSettings = JSON.parse(saved);
+            // 既存の設定とマージ（新しいプロパティがある場合に対応）
+            timer.settings = { ...timer.settings, ...loadedSettings };
+        }
+    } catch (error) {
+        console.warn('Failed to load settings:', error);
+    }
+}
+
+// 設定をLocalStorageに保存する
+function saveSettings() {
+    try {
+        localStorage.setItem('hiit-timer-settings', JSON.stringify(timer.settings));
+    } catch (error) {
+        console.warn('Failed to save settings:', error);
+    }
+}
+
 // 初期化
+loadSettings();
 updateDisplay();
 updateTimerStyle();
