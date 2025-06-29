@@ -358,11 +358,28 @@ function updateSetGradientBackground() {
     const progressBar = elements.horizontalProgressBar;
     const totalSets = timer.settings.totalSets;
     
-    // シンプルなグラデーション（青から紫へ）
-    const startColor = 'rgba(102, 126, 234, 0.4)';  // 青
-    const endColor = 'rgba(118, 75, 162, 0.4)';     // 紫
+    // 同系色（青系）で明度を変化させる
+    const colors = [];
+    for (let i = 0; i < totalSets; i++) {
+        // 青系の色相（200-220度）で、明度を変化させる
+        const hue = 210;
+        const saturation = 30;  // 彩度を少し上げて視認性を向上
+        const lightness = 75 - (i * 25 / totalSets); // 75%から50%まで変化（最初からしっかり濃い目に）
+        colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+    }
     
-    progressBar.style.background = `linear-gradient(to right, ${startColor}, ${endColor})`;
+    // グラデーションストップを生成（境目をはっきりさせる）
+    const gradientStops = [];
+    for (let i = 0; i < totalSets; i++) {
+        const startPercent = (i / totalSets) * 100;
+        const endPercent = ((i + 1) / totalSets) * 100;
+        
+        // 各セットの色を開始から終了まで同じ色で塗る
+        gradientStops.push(`${colors[i]} ${startPercent}%`);
+        gradientStops.push(`${colors[i]} ${endPercent}%`);
+    }
+    
+    progressBar.style.background = `linear-gradient(to right, ${gradientStops.join(', ')})`;
 }
 
 // 運動のハーフタイムで通知
