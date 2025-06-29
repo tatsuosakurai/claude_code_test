@@ -284,20 +284,20 @@ function updateVerticalProgress() {
     if (!elements.verticalProgress) return;
     
     let heightPercent = 0;
-    let progressColor = '#4ecdc4'; // デフォルト色
+    let progressColor = 'rgba(76, 236, 196, 0.15)'; // デフォルト色
     
     if (timer.state === TimerState.WORK) {
         const totalTime = timer.settings.workTime;
         heightPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
-        progressColor = '#ff6b6b'; // 赤
+        progressColor = 'rgba(255, 107, 107, 0.15)'; // 赤
     } else if (timer.state === TimerState.REST) {
         const totalTime = timer.settings.restTime;
         heightPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
-        progressColor = '#4ecdc4'; // 緑
+        progressColor = 'rgba(76, 236, 196, 0.15)'; // 緑
     } else if (timer.state === TimerState.PREPARE) {
         const totalTime = timer.settings.prepareTime;
         heightPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
-        progressColor = '#c8c8c8'; // グレー
+        progressColor = 'rgba(200, 200, 200, 0.15)'; // グレー
     } else {
         heightPercent = 0;
     }
