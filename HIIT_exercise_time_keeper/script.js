@@ -220,7 +220,11 @@ function updateTimerStyle() {
     switch (timer.state) {
         case TimerState.PREPARE:
             elements.status.textContent = 'READY!!!';
-            elements.menuDisplay.textContent = '';
+            if (timer.settings.menu.length > 0 && timer.settings.menu[0]) {
+                elements.menuDisplay.textContent = `次は: ${timer.settings.menu[0]}`;
+            } else {
+                elements.menuDisplay.textContent = '';
+            }
             break;
         case TimerState.WORK:
             elements.timerDisplay.classList.add('work');
