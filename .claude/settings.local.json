@@ -3,7 +3,8 @@
     "allow": [
       "Bash(ccusage)",
       "Bash(open index.html)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Bash(python3:*)"
     ],
     "deny": []
   }

@@ -21,7 +21,7 @@ const timer = {
         workTime: 20,
         restTime: 10,
         prepareTime: 10,
-        totalSets: 9,
+        totalSets: 9, // 固定値（メニューの数で動的に変更）
         audioEnabled: true,
         volume: 0.7,
         menu: []
@@ -185,7 +185,6 @@ const elements = {
     // 設定関連の要素
     workTimeInput: document.getElementById('workTimeInput'),
     prepareTimeInput: document.getElementById('prepareTimeInput'),
-    setCountInput: document.getElementById('setCountInput'),
     menuInput: document.getElementById('menuInput'),
     applySettingsBtn: document.getElementById('applySettingsBtn'),
     // 進捗表示関連の要素
@@ -203,7 +202,6 @@ function updateDisplay() {
     // 設定入力フィールドの値を更新
     elements.workTimeInput.value = timer.settings.workTime;
     elements.prepareTimeInput.value = timer.settings.prepareTime;
-    elements.setCountInput.value = timer.settings.totalSets;
     elements.menuInput.value = timer.settings.menu.join(' ');
     
     // 進捗表示の更新
@@ -480,7 +478,6 @@ function finishTimer() {
 function validateSettings() {
     const workTime = parseInt(elements.workTimeInput.value);
     const prepareTime = parseInt(elements.prepareTimeInput.value);
-    const totalSets = parseInt(elements.setCountInput.value);
     const menuText = elements.menuInput.value.trim();
     
     // 値の検証
@@ -493,13 +490,9 @@ function validateSettings() {
         alert('準備時間は1〜999の間で入力してください');
         return false;
     }
-    
-    if (isNaN(totalSets) || totalSets < 1 || totalSets > 99) {
-        alert('セット数は1〜99の間で入力してください');
-        return false;
-    }
 
-    const menu = menuText.split(/[\s\n,]+/).filter(item => item).slice(0, 9);
+    const menu = menuText.split(/[\s\n,]+/).filter(item => item);
+    const totalSets = menu.length || 9; // メニューの数に応じてセット数を決定
     
     return { 
         ...timer.settings, // 既存の設定をコピー
@@ -576,11 +569,6 @@ elements.workTimeInput.addEventListener('input', (e) => {
 elements.prepareTimeInput.addEventListener('input', (e) => {
     if (e.target.value < 1) e.target.value = 1;
     if (e.target.value > 999) e.target.value = 999;
-});
-
-elements.setCountInput.addEventListener('input', (e) => {
-    if (e.target.value < 1) e.target.value = 1;
-    if (e.target.value > 99) e.target.value = 99;
 });
 
 
