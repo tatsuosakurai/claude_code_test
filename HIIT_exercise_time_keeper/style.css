@@ -338,20 +338,19 @@ body {
 
 /* 縦のプログレスバーコンテナ */
 .vertical-progress-container {
-    position: absolute;
-    right: 40px;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 80%;
-    width: 20px;
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    width: 30px;
+    z-index: 10;
 }
 
 /* 縦のプログレスバー */
 .vertical-progress-bar {
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.05);
     overflow: hidden;
     position: relative;
 }
@@ -363,7 +362,6 @@ body {
     position: absolute;
     bottom: 0;
     transition: height 0.3s ease;
-    border-radius: 10px;
 }
 
 .time-input:invalid {
