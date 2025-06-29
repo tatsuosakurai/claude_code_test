@@ -270,45 +270,13 @@ function updateTimerStyle() {
             break;
     }
     
-    // 初期背景色を設定
-    updateTimerBackgroundGradient();
-    
     // 縦のプログレスバーを初期化
     updateVerticalProgress();
 }
 
-// タイマー背景色のグラデーション更新
+// タイマー背景色のグラデーション更新（削除）
 function updateTimerBackgroundGradient() {
-    let progress = 0;
-    let progressColor, remainingColor;
-    
-    if (timer.state === TimerState.WORK) {
-        const totalTime = timer.settings.workTime;
-        progress = ((totalTime - timer.currentTime) / totalTime) * 100;
-        // 運動中：進行部分は赤、残り部分は薄い赤
-        progressColor = '#ff6b6b';      // 濃い赤
-        remainingColor = '#ffb4b4';     // 薄い赤
-    } else if (timer.state === TimerState.REST) {
-        const totalTime = timer.settings.restTime;
-        progress = ((totalTime - timer.currentTime) / totalTime) * 100;
-        // 休憩中：進行部分は緑、残り部分は薄い緑
-        progressColor = '#4ecdc4';      // 濃い緑
-        remainingColor = '#b4f0dc';     // 薄い緑
-    } else if (timer.state === TimerState.PREPARE) {
-        const totalTime = timer.settings.prepareTime;
-        progress = ((totalTime - timer.currentTime) / totalTime) * 100;
-        // 準備中：進行部分は濃いグレー、残り部分は薄いグレー
-        progressColor = '#c8c8c8';      // 濃いグレー
-        remainingColor = '#f5f5f5';     // 薄いグレー
-    } else {
-        // IDLE, FINISHED
-        elements.timerDisplay.style.background = '';
-        return;
-    }
-    
-    // 線形グラデーションで進捗を表示（上から下へ）
-    elements.timerDisplay.style.background = 
-        `linear-gradient(to bottom, ${progressColor} ${progress}%, ${remainingColor} ${progress}%)`;
+    // 背景のグラデーションは不要になったため、何もしない
 }
 
 // 縦のプログレスバーを更新
@@ -438,9 +406,6 @@ function countdown() {
     
     // 進捗表示を更新
     updateProgressDisplay();
-    
-    // 背景色のグラデーション更新
-    updateTimerBackgroundGradient();
     
     // 縦のプログレスバーを更新
     updateVerticalProgress();
