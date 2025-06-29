@@ -201,6 +201,8 @@ const elements = {
     horizontalProgressBar: document.getElementById('horizontalProgressBar'),
     horizontalProgress: document.getElementById('horizontalProgress'),
     horizontalSetDividers: document.getElementById('horizontalSetDividers'),
+    verticalProgressBar: document.getElementById('verticalProgressBar'),
+    verticalProgress: document.getElementById('verticalProgress'),
     // メニュー表示
     menuDisplay: document.getElementById('menuDisplay')
 };
@@ -270,6 +272,9 @@ function updateTimerStyle() {
     
     // 初期背景色を設定
     updateTimerBackgroundGradient();
+    
+    // 縦のプログレスバーを初期化
+    updateVerticalProgress();
 }
 
 // タイマー背景色のグラデーション更新
@@ -304,6 +309,33 @@ function updateTimerBackgroundGradient() {
     // 線形グラデーションで進捗を表示（上から下へ）
     elements.timerDisplay.style.background = 
         `linear-gradient(to bottom, ${progressColor} ${progress}%, ${remainingColor} ${progress}%)`;
+}
+
+// 縦のプログレスバーを更新
+function updateVerticalProgress() {
+    if (!elements.verticalProgress) return;
+    
+    let heightPercent = 0;
+    let progressColor = '#4ecdc4'; // デフォルト色
+    
+    if (timer.state === TimerState.WORK) {
+        const totalTime = timer.settings.workTime;
+        heightPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
+        progressColor = '#ff6b6b'; // 赤
+    } else if (timer.state === TimerState.REST) {
+        const totalTime = timer.settings.restTime;
+        heightPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
+        progressColor = '#4ecdc4'; // 緑
+    } else if (timer.state === TimerState.PREPARE) {
+        const totalTime = timer.settings.prepareTime;
+        heightPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
+        progressColor = '#c8c8c8'; // グレー
+    } else {
+        heightPercent = 0;
+    }
+    
+    elements.verticalProgress.style.height = heightPercent + '%';
+    elements.verticalProgress.style.backgroundColor = progressColor;
 }
 
 // 進捗表示を更新
@@ -409,6 +441,9 @@ function countdown() {
     
     // 背景色のグラデーション更新
     updateTimerBackgroundGradient();
+    
+    // 縦のプログレスバーを更新
+    updateVerticalProgress();
     
     // ハーフタイム通知をチェック
     checkHalfTime();

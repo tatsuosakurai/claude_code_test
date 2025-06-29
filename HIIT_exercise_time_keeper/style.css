@@ -326,6 +326,46 @@ body {
     z-index: 11;
 }
 
+/* タイマーコンテンツのラッパー */
+.timer-content-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* 縦のプログレスバーコンテナ */
+.vertical-progress-container {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 80%;
+    width: 20px;
+}
+
+/* 縦のプログレスバー */
+.vertical-progress-bar {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 縦のプログレスの塗りつぶし */
+.vertical-progress {
+    width: 100%;
+    background-color: #4ecdc4;
+    position: absolute;
+    bottom: 0;
+    transition: height 0.3s ease;
+    border-radius: 10px;
+}
+
 .time-input:invalid {
     border-color: #ff6b6b;
 }
