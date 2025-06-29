@@ -592,6 +592,22 @@ function loadSettings() {
             const loadedSettings = JSON.parse(saved);
             // 既存の設定とマージ（新しいプロパティがある場合に対応）
             timer.settings = { ...timer.settings, ...loadedSettings };
+            
+            // メニューが空の場合はデフォルトメニューを使用
+            if (!timer.settings.menu || timer.settings.menu.length === 0) {
+                timer.settings.menu = [
+                    '腕立て',
+                    '腕立て(脇締め)',
+                    'スクワット',
+                    'バックランジ',
+                    'バックランジニーアップ',
+                    'マウンテンクライマー',
+                    'マウンテンクライマー(ツイスト)',
+                    'バービー',
+                    'ニーアップ'
+                ];
+                timer.settings.totalSets = 9;
+            }
         }
     } catch (error) {
         console.warn('Failed to load settings:', error);
