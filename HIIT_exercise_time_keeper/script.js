@@ -24,7 +24,17 @@ const timer = {
         totalSets: 9, // 固定値（メニューの数で動的に変更）
         audioEnabled: true,
         volume: 0.7,
-        menu: []
+        menu: [
+            '腕立て',
+            '腕立て(脇締め)',
+            'スクワット',
+            'バックランジ',
+            'バックランジニーアップ',
+            'マウンテンクライマー',
+            'マウンテンクライマー(ツイスト)',
+            'バービー',
+            'ニーアップ'
+        ]
     }
 };
 
@@ -202,7 +212,7 @@ function updateDisplay() {
     // 設定入力フィールドの値を更新
     elements.workTimeInput.value = timer.settings.workTime;
     elements.prepareTimeInput.value = timer.settings.prepareTime;
-    elements.menuInput.value = timer.settings.menu.join(' ');
+    elements.menuInput.value = timer.settings.menu.join('\n');
     
     // 進捗表示の更新
     updateProgressDisplay();
