@@ -358,38 +358,26 @@ function updateSetGradientBackground() {
     const progressBar = elements.horizontalProgressBar;
     const totalSets = timer.settings.totalSets;
     
-    // 各セットごとに異なる色を生成
+    // 同系色（青系）で明度を変化させる
     const colors = [];
     for (let i = 0; i < totalSets; i++) {
-        // HSLカラーモデルを使用して、色相を変化させる
-        const hue = (i * 360 / totalSets) % 360;
-        const saturation = 70;
-        const lightness = 85;
+        // 青系の色相（200-220度）で、明度を変化させる
+        const hue = 210;
+        const saturation = 40;
+        const lightness = 90 - (i * 30 / totalSets); // 90%から60%まで変化
         colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
     }
     
-    // グラデーションストップを生成
+    // グラデーションストップを生成（境目をはっきりさせる）
     const gradientStops = [];
     for (let i = 0; i < totalSets; i++) {
         const startPercent = (i / totalSets) * 100;
         const endPercent = ((i + 1) / totalSets) * 100;
         
-        // 各セットの開始位置で色を設定
-        if (i > 0) {
-            gradientStops.push(`${colors[i]} ${startPercent}%`);
-        }
-        
-        // 各セットの終了位置で次の色への遷移
-        if (i < totalSets - 1) {
-            gradientStops.push(`${colors[i]} ${endPercent - 2}%`);
-            gradientStops.push(`${colors[i + 1]} ${endPercent}%`);
-        } else {
-            gradientStops.push(`${colors[i]} ${endPercent}%`);
-        }
+        // 各セットの色を開始から終了まで同じ色で塗る
+        gradientStops.push(`${colors[i]} ${startPercent}%`);
+        gradientStops.push(`${colors[i]} ${endPercent}%`);
     }
-    
-    // 最初の色を追加
-    gradientStops.unshift(`${colors[0]} 0%`);
     
     progressBar.style.background = `linear-gradient(to right, ${gradientStops.join(', ')})`;
 }
