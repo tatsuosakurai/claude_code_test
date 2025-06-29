@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code Test Projects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #2c3e50;
+            font-size: 2.5rem;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .project-card h2 {
+            margin-bottom: 1rem;
+            color: #34495e;
+            font-size: 1.5rem;
+        }
+
+        .project-card p {
+            margin-bottom: 1.5rem;
+            color: #7f8c8d;
+        }
+
+        .project-link {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .project-link:hover {
+            background-color: #2980b9;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding: 2rem;
+            color: #7f8c8d;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .projects-grid {
+                gap: 1rem;
+            }
+
+            .project-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Claude Code Test Projects</h1>
+        
+        <div class="projects-grid">
+            <div class="project-card">
+                <h2>HIIT エクササイズタイマー</h2>
+                <p>高強度インターバルトレーニング（HIIT）用のタイマーアプリ。運動と休憩を交互に繰り返し、効率的なトレーニングをサポートします。</p>
+                <a href="./HIIT_exercise_time_keeper/" class="project-link">アプリを開く</a>
+            </div>
+
+            <div class="project-card">
+                <h2>あみだくじ</h2>
+                <p>シンプルなあみだくじアプリ。グループでの順番決めや抽選に便利です。</p>
+                <a href="./amidakuji/amidakuji.html" class="project-link">アプリを開く</a>
+            </div>
+
+            <div class="project-card">
+                <h2>まるばつゲーム</h2>
+                <p>クラシックな○×ゲーム（Tic-Tac-Toe）。2人で対戦して楽しめます。</p>
+                <a href="./marubatsu/" class="project-link">アプリを開く</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Created with Claude Code</p>
+    </footer>
+</body>
+</html>
