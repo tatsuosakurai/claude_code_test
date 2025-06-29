@@ -358,11 +358,40 @@ function updateSetGradientBackground() {
     const progressBar = elements.horizontalProgressBar;
     const totalSets = timer.settings.totalSets;
     
-    // シンプルなグラデーション（青から紫へ）
-    const startColor = 'rgba(102, 126, 234, 0.4)';  // 青
-    const endColor = 'rgba(118, 75, 162, 0.4)';     // 紫
+    // 各セットごとに異なる色を生成
+    const colors = [];
+    for (let i = 0; i < totalSets; i++) {
+        // HSLカラーモデルを使用して、色相を変化させる
+        const hue = (i * 360 / totalSets) % 360;
+        const saturation = 70;
+        const lightness = 85;
+        colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
+    }
     
-    progressBar.style.background = `linear-gradient(to right, ${startColor}, ${endColor})`;
+    // グラデーションストップを生成
+    const gradientStops = [];
+    for (let i = 0; i < totalSets; i++) {
+        const startPercent = (i / totalSets) * 100;
+        const endPercent = ((i + 1) / totalSets) * 100;
+        
+        // 各セットの開始位置で色を設定
+        if (i > 0) {
+            gradientStops.push(`${colors[i]} ${startPercent}%`);
+        }
+        
+        // 各セットの終了位置で次の色への遷移
+        if (i < totalSets - 1) {
+            gradientStops.push(`${colors[i]} ${endPercent - 2}%`);
+            gradientStops.push(`${colors[i + 1]} ${endPercent}%`);
+        } else {
+            gradientStops.push(`${colors[i]} ${endPercent}%`);
+        }
+    }
+    
+    // 最初の色を追加
+    gradientStops.unshift(`${colors[0]} 0%`);
+    
+    progressBar.style.background = `linear-gradient(to right, ${gradientStops.join(', ')})`;
 }
 
 // 運動のハーフタイムで通知
