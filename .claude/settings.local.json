@@ -4,7 +4,8 @@
       "Bash(ccusage)",
       "Bash(open index.html)",
       "Bash(git remote:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(./scripts/setup-hooks.sh:*)"
     ],
     "deny": []
   }
