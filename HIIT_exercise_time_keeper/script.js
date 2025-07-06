@@ -753,7 +753,17 @@ function saveSettings() {
     }
 }
 
+// バージョン情報を表示
+function displayVersion() {
+    const versionElement = document.getElementById('versionInfo');
+    if (window.APP_VERSION && versionElement) {
+        versionElement.textContent = `v${window.APP_VERSION.build}`;
+        versionElement.title = `Build: ${window.APP_VERSION.build}\nUpdated: ${window.APP_VERSION.timestamp}`;
+    }
+}
+
 // 初期化
 loadSettings();
 updateDisplay();
 updateTimerStyle();
+displayVersion();
