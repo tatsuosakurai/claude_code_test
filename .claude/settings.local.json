@@ -4,7 +4,11 @@
       "Bash(ccusage)",
       "Bash(open index.html)",
       "Bash(git remote:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(gh pr create:*)",
+      "Bash(git restore:*)",
+      "Bash(TZ:*)",
+      "Bash(git pull:*)"
     ],
     "deny": []
   }
