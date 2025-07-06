@@ -201,6 +201,8 @@ const elements = {
     horizontalProgressBar: document.getElementById('horizontalProgressBar'),
     horizontalProgress: document.getElementById('horizontalProgress'),
     horizontalSetDividers: document.getElementById('horizontalSetDividers'),
+    verticalProgressBar: document.getElementById('verticalProgressBar'),
+    verticalProgress: document.getElementById('verticalProgress'),
     // メニュー表示
     menuDisplay: document.getElementById('menuDisplay')
 };
@@ -330,6 +332,27 @@ function updateProgressDisplay() {
     const overallProgressPercent = ((completedSets + currentSetProgress) / timer.settings.totalSets) * 100;
     
     elements.horizontalProgress.style.width = overallProgressPercent + '%';
+    
+    // 縦進捗バーの更新（現在のエクササイズの進捗）
+    updateVerticalProgress();
+}
+
+// 縦のプログレスバーを更新
+function updateVerticalProgress() {
+    let verticalProgressPercent = 0;
+    
+    if (timer.state === TimerState.WORK) {
+        const totalTime = timer.settings.workTime;
+        verticalProgressPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
+    } else if (timer.state === TimerState.REST) {
+        const totalTime = timer.settings.restTime;
+        verticalProgressPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
+    } else if (timer.state === TimerState.PREPARE) {
+        const totalTime = timer.settings.prepareTime;
+        verticalProgressPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
+    }
+    
+    elements.verticalProgress.style.height = verticalProgressPercent + '%';
 }
 
 // 横セット区切り線を作成
@@ -492,6 +515,8 @@ function resetTimer() {
     timer.totalElapsedTime = 0;
     updateDisplay();
     updateTimerStyle();
+    // 縦のプログレスバーもリセット
+    elements.verticalProgress.style.height = '0%';
 }
 
 // タイマー完了
