@@ -1,5 +1,5 @@
 // バージョン情報を動的に設定
 window.APP_VERSION = {
-    build: '2025.07.06-1035-74c19a3',  // デフォルト値（実際の値はCIで置換される）
-    timestamp: new Date().toISOString()
+    build: '2025.07.06-1059-e9e0135',
+    timestamp: '2025-07-06T01:59:22Z'
 };

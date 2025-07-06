@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Pre-commit hook: バージョン情報を自動更新
+
+echo "Updating version information..."
+
+# プロジェクトルートディレクトリに移動
+cd "$(git rev-parse --show-toplevel)"
+
+# バージョン更新スクリプトを実行
+./scripts/update-version.sh
+
+# 更新されたファイルをステージングに追加
+git add HIIT_exercise_time_keeper/version.js
+
+echo "Version information updated and staged."

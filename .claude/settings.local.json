@@ -5,10 +5,12 @@
       "Bash(open index.html)",
       "Bash(git remote:*)",
       "Bash(python3:*)",
+      "Bash(./scripts/setup-hooks.sh:*)",
       "Bash(gh pr create:*)",
       "Bash(git restore:*)",
       "Bash(TZ:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git merge:*)"
     ],
     "deny": []
   }
