@@ -583,9 +583,97 @@ function toggleSettings() {
     elements.settingsPanel.classList.toggle('hidden');
 }
 
+// スーパーリロード機能
+let resetPressTimer = null;
+let isLongPress = false;
+
+async function superReload() {
+    // 視覚的フィードバック
+    elements.resetBtn.style.backgroundColor = '#ff6b6b';
+    elements.resetBtn.innerHTML = '<span class="btn-icon">⟳</span>';
+    
+    // Service Workerのキャッシュをクリア
+    if ('caches' in window) {
+        try {
+            const cacheNames = await caches.keys();
+            await Promise.all(
+                cacheNames.map(cacheName => caches.delete(cacheName))
+            );
+            console.log('All caches cleared');
+        } catch (error) {
+            console.error('Failed to clear caches:', error);
+        }
+    }
+    
+    // Service Workerの更新を強制
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    }
+    
+    // LocalStorageをクリア（設定は保持）
+    const settings = localStorage.getItem('hiit-timer-settings');
+    localStorage.clear();
+    if (settings) {
+        localStorage.setItem('hiit-timer-settings', settings);
+    }
+    
+    // フィードバック表示
+    setTimeout(() => {
+        window.location.reload(true);
+    }, 300);
+}
+
 // イベントリスナーの設定
 elements.startBtn.addEventListener('click', startTimer);
-elements.resetBtn.addEventListener('click', resetTimer);
+
+// リセットボタンの通常クリックと長押しを処理
+elements.resetBtn.addEventListener('mousedown', () => {
+    isLongPress = false;
+    elements.resetBtn.classList.add('long-pressing');
+    resetPressTimer = setTimeout(() => {
+        isLongPress = true;
+        superReload();
+    }, 1000); // 1秒長押しでスーパーリロード
+});
+
+elements.resetBtn.addEventListener('mouseup', () => {
+    clearTimeout(resetPressTimer);
+    elements.resetBtn.classList.remove('long-pressing');
+    if (!isLongPress) {
+        resetTimer();
+    }
+});
+
+elements.resetBtn.addEventListener('mouseleave', () => {
+    clearTimeout(resetPressTimer);
+    elements.resetBtn.classList.remove('long-pressing');
+});
+
+// タッチデバイス対応
+elements.resetBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // デフォルトのタッチ動作を防ぐ
+    isLongPress = false;
+    elements.resetBtn.classList.add('long-pressing');
+    resetPressTimer = setTimeout(() => {
+        isLongPress = true;
+        superReload();
+    }, 1000);
+});
+
+elements.resetBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    clearTimeout(resetPressTimer);
+    elements.resetBtn.classList.remove('long-pressing');
+    if (!isLongPress) {
+        resetTimer();
+    }
+});
+
+elements.resetBtn.addEventListener('touchcancel', () => {
+    clearTimeout(resetPressTimer);
+    elements.resetBtn.classList.remove('long-pressing');
+});
+
 elements.settingsBtn.addEventListener('click', toggleSettings);
 elements.applySettingsBtn.addEventListener('click', applySettings);
 
