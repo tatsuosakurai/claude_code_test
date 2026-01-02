@@ -107,6 +107,52 @@ const audioSystem = {
     }
 };
 
+// Wake Lock システム
+const wakeLockSystem = {
+    wakeLock: null,
+
+    // Wake Lockをリクエスト
+    async request() {
+        // Wake Lock APIのサポート確認
+        if (!('wakeLock' in navigator)) {
+            console.warn('Wake Lock API is not supported');
+            return;
+        }
+
+        try {
+            this.wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock acquired');
+
+            // Wake Lockが解放されたときのハンドリング
+            this.wakeLock.addEventListener('release', () => {
+                console.log('Wake Lock released');
+            });
+        } catch (error) {
+            console.warn('Failed to acquire Wake Lock:', error);
+        }
+    },
+
+    // Wake Lockを解放
+    async release() {
+        if (this.wakeLock) {
+            try {
+                await this.wakeLock.release();
+                this.wakeLock = null;
+            } catch (error) {
+                console.warn('Failed to release Wake Lock:', error);
+            }
+        }
+    },
+
+    // タブの表示状態変更に対応
+    handleVisibilityChange() {
+        if (document.visibilityState === 'visible' && timer.interval) {
+            // タブが再アクティブ化され、タイマーが動作中ならWake Lockを再取得
+            this.request();
+        }
+    }
+};
+
 // プリセット管理システム
 const presetSystem = {
     // デフォルトプリセット
@@ -497,6 +543,9 @@ async function startTimer() {
     // 音声システムを初期化（ユーザーアクションが必要）
     await audioSystem.init();
 
+    // Wake Lockを要求（画面がスリープしないようにする）
+    await wakeLockSystem.request();
+
     if (timer.state === TimerState.IDLE || timer.state === TimerState.FINISHED) {
         // 初回開始時は準備時間から
         timer.currentSet = 0;
@@ -518,11 +567,14 @@ async function startTimer() {
 }
 
 // タイマー停止
-function stopTimer() {
+async function stopTimer() {
     if (timer.interval) {
         clearInterval(timer.interval);
         timer.interval = null;
     }
+
+    // Wake Lockを解放
+    await wakeLockSystem.release();
 
     // ボタンの状態を更新
     elements.startBtn.disabled = false;
@@ -543,8 +595,8 @@ function resetTimer() {
 }
 
 // タイマー完了
-function finishTimer() {
-    stopTimer();
+async function finishTimer() {
+    await stopTimer();
     timer.state = TimerState.FINISHED;
     updateTimerStyle();
 }
@@ -789,6 +841,11 @@ function displayVersion() {
         versionElement.title = `Build: ${window.APP_VERSION.build}\nUpdated: ${window.APP_VERSION.timestamp}`;
     }
 }
+
+// タブの表示状態変更を監視（Wake Lock再取得用）
+document.addEventListener('visibilitychange', () => {
+    wakeLockSystem.handleVisibilityChange();
+});
 
 // 初期化
 loadSettings();
