@@ -1,10 +1,15 @@
-const CACHE_NAME = 'hiit-timer-v1';
+// バージョン情報を読み込む
+importScripts('./version.js');
+
+// バージョン番号をキャッシュ名に含める
+const CACHE_NAME = `hiit-timer-${self.APP_VERSION.build}`;
 const urlsToCache = [
     './',
     './index.html',
     './style.css',
     './script.js',
-    './viewport-height.js'
+    './viewport-height.js',
+    './version.js'
 ];
 
 // インストール時にキャッシュ
