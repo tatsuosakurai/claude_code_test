@@ -20,6 +20,7 @@ const DEFAULT_MENU = [
     'バービー',
     'ニーアップ'
 ];
+const FIXED_REST_TIME = 10;
 
 // タイマーの設定と状態
 const timer = {
@@ -33,7 +34,7 @@ const timer = {
     // デフォルト設定
     settings: {
         workTime: 20,
-        restTime: 10,
+        restTime: FIXED_REST_TIME,
         prepareTime: 10,
         totalSets: DEFAULT_MENU.length, // メニュー数に連動
         audioEnabled: true,
@@ -150,86 +151,6 @@ const wakeLockSystem = {
             // タブが再アクティブ化され、タイマーが動作中ならWake Lockを再取得
             this.request();
         }
-    }
-};
-
-// プリセット管理システム
-const presetSystem = {
-    // デフォルトプリセット
-    defaultPresets: {
-        tabata: {
-            name: 'タバタ式',
-            workTime: 20,
-            restTime: 10,
-            totalSets: 9,
-            audioEnabled: true,
-            volume: 0.7
-        },
-        emom: {
-            name: 'EMOM',
-            workTime: 45,
-            restTime: 15,
-            totalSets: 10,
-            audioEnabled: true,
-            volume: 0.7
-        },
-        beginner: {
-            name: '初心者向け',
-            workTime: 15,
-            restTime: 15,
-            totalSets: 6,
-            audioEnabled: true,
-            volume: 0.7
-        }
-    },
-
-    // カスタムプリセットをLocalStorageから取得
-    getCustomPresets() {
-        try {
-            const saved = localStorage.getItem('hiit-custom-presets');
-            return saved ? JSON.parse(saved) : {};
-        } catch (error) {
-            console.warn('Failed to load custom presets:', error);
-            return {};
-        }
-    },
-
-    // カスタムプリセットをLocalStorageに保存
-    saveCustomPresets(presets) {
-        try {
-            localStorage.setItem('hiit-custom-presets', JSON.stringify(presets));
-        } catch (error) {
-            console.warn('Failed to save custom presets:', error);
-        }
-    },
-
-    // プリセットを取得
-    getPreset(key) {
-        if (this.defaultPresets[key]) {
-            return this.defaultPresets[key];
-        }
-
-        const customPresets = this.getCustomPresets();
-        return customPresets[key] || null;
-    },
-
-    // カスタムプリセットを保存
-    savePreset(key, preset) {
-        const customPresets = this.getCustomPresets();
-        customPresets[key] = preset;
-        this.saveCustomPresets(customPresets);
-    },
-
-    // カスタムプリセットを削除
-    deletePreset(key) {
-        const customPresets = this.getCustomPresets();
-        delete customPresets[key];
-        this.saveCustomPresets(customPresets);
-    },
-
-    // 全カスタムプリセットを取得
-    getAllCustomPresets() {
-        return this.getCustomPresets();
     }
 };
 
@@ -630,7 +551,7 @@ function validateSettings() {
         prepareTime,
         totalSets,
         menu,
-        restTime: timer.settings.restTime,
+        restTime: FIXED_REST_TIME,
         audioEnabled: timer.settings.audioEnabled,
         volume: timer.settings.volume
     };
@@ -811,6 +732,7 @@ function loadSettings() {
             const loadedSettings = JSON.parse(saved);
             // 既存の設定とマージ（新しいプロパティがある場合に対応）
             timer.settings = { ...timer.settings, ...loadedSettings };
+            timer.settings.restTime = FIXED_REST_TIME;
 
             if (Array.isArray(timer.settings.menu)) {
                 timer.settings.totalSets = timer.settings.menu.length;
