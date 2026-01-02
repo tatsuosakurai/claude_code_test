@@ -7,6 +7,20 @@ const TimerState = {
     FINISHED: 'finished'
 };
 
+const DEFAULT_MENU = [
+    '腕立て',
+    '腕立て(脇締め)',
+    'スクワット',
+    '片足スクワット',
+    '片足スクワットツイスト',
+    'バックランジ',
+    'バックランジニーアップ',
+    'マウンテンクライマー',
+    'マウンテンクライマー(ツイスト)',
+    'バービー',
+    'ニーアップ'
+];
+
 // タイマーの設定と状態
 const timer = {
     state: TimerState.IDLE,
@@ -15,26 +29,16 @@ const timer = {
     interval: null,
     startTime: null,
     totalElapsedTime: 0,
-    
+
     // デフォルト設定
     settings: {
         workTime: 20,
         restTime: 10,
         prepareTime: 10,
-        totalSets: 9, // 固定値（メニューの数で動的に変更）
+        totalSets: DEFAULT_MENU.length, // メニュー数に連動
         audioEnabled: true,
         volume: 0.7,
-        menu: [
-            '腕立て',
-            '腕立て(脇締め)',
-            'スクワット',
-            'バックランジ',
-            'バックランジニーアップ',
-            'マウンテンクライマー',
-            'マウンテンクライマー(ツイスト)',
-            'バービー',
-            'ニーアップ'
-        ]
+        menu: DEFAULT_MENU.slice()
     }
 };
 
@@ -42,11 +46,11 @@ const timer = {
 const audioSystem = {
     context: null,
     initialized: false,
-    
+
     // 音声コンテキストの初期化
     async init() {
         if (this.initialized) return;
-        
+
         try {
             this.context = new (window.AudioContext || window.webkitAudioContext)();
             this.initialized = true;
@@ -54,52 +58,98 @@ const audioSystem = {
             console.warn('Audio context creation failed:', error);
         }
     },
-    
+
     // ビープ音を生成
     async playBeep(frequency = 440, duration = 0.2, volume = 0.7) {
         if (!timer.settings.audioEnabled || !this.context) return;
-        
+
         try {
             const oscillator = this.context.createOscillator();
             const gainNode = this.context.createGain();
-            
+
             oscillator.connect(gainNode);
             gainNode.connect(this.context.destination);
-            
+
             oscillator.frequency.setValueAtTime(frequency, this.context.currentTime);
             oscillator.type = 'sine';
-            
+
             gainNode.gain.setValueAtTime(0, this.context.currentTime);
             gainNode.gain.linearRampToValueAtTime(volume, this.context.currentTime + 0.01);
             gainNode.gain.exponentialRampToValueAtTime(0.001, this.context.currentTime + duration);
-            
+
             oscillator.start(this.context.currentTime);
             oscillator.stop(this.context.currentTime + duration);
         } catch (error) {
             console.warn('Audio playback failed:', error);
         }
     },
-    
+
     // カウントダウン音（高音、短い）
     playCountdown() {
         this.playBeep(880, 0.1, timer.settings.volume);
     },
-    
+
     // 運動開始音（高音、長め）
     playWorkStart() {
         this.playBeep(880, 0.3, timer.settings.volume);
     },
-    
+
     // 休憩開始音（低音、長め）
     playRestStart() {
         this.playBeep(440, 0.3, timer.settings.volume);
     },
-    
+
     // 完了音（2つの音）
     async playFinish() {
         if (!timer.settings.audioEnabled) return;
         this.playBeep(880, 0.3, timer.settings.volume);
         setTimeout(() => this.playBeep(1100, 0.3, timer.settings.volume), 300);
+    }
+};
+
+// Wake Lock システム
+const wakeLockSystem = {
+    wakeLock: null,
+
+    // Wake Lockをリクエスト
+    async request() {
+        // Wake Lock APIのサポート確認
+        if (!('wakeLock' in navigator)) {
+            console.warn('Wake Lock API is not supported');
+            return;
+        }
+
+        try {
+            this.wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock acquired');
+
+            // Wake Lockが解放されたときのハンドリング
+            this.wakeLock.addEventListener('release', () => {
+                console.log('Wake Lock released');
+            });
+        } catch (error) {
+            console.warn('Failed to acquire Wake Lock:', error);
+        }
+    },
+
+    // Wake Lockを解放
+    async release() {
+        if (this.wakeLock) {
+            try {
+                await this.wakeLock.release();
+                this.wakeLock = null;
+            } catch (error) {
+                console.warn('Failed to release Wake Lock:', error);
+            }
+        }
+    },
+
+    // タブの表示状態変更に対応
+    handleVisibilityChange() {
+        if (document.visibilityState === 'visible' && timer.interval) {
+            // タブが再アクティブ化され、タイマーが動作中ならWake Lockを再取得
+            this.request();
+        }
     }
 };
 
@@ -132,7 +182,7 @@ const presetSystem = {
             volume: 0.7
         }
     },
-    
+
     // カスタムプリセットをLocalStorageから取得
     getCustomPresets() {
         try {
@@ -143,7 +193,7 @@ const presetSystem = {
             return {};
         }
     },
-    
+
     // カスタムプリセットをLocalStorageに保存
     saveCustomPresets(presets) {
         try {
@@ -152,31 +202,31 @@ const presetSystem = {
             console.warn('Failed to save custom presets:', error);
         }
     },
-    
+
     // プリセットを取得
     getPreset(key) {
         if (this.defaultPresets[key]) {
             return this.defaultPresets[key];
         }
-        
+
         const customPresets = this.getCustomPresets();
         return customPresets[key] || null;
     },
-    
+
     // カスタムプリセットを保存
     savePreset(key, preset) {
         const customPresets = this.getCustomPresets();
         customPresets[key] = preset;
         this.saveCustomPresets(customPresets);
     },
-    
+
     // カスタムプリセットを削除
     deletePreset(key) {
         const customPresets = this.getCustomPresets();
         delete customPresets[key];
         this.saveCustomPresets(customPresets);
     },
-    
+
     // 全カスタムプリセットを取得
     getAllCustomPresets() {
         return this.getCustomPresets();
@@ -197,6 +247,7 @@ const elements = {
     prepareTimeInput: document.getElementById('prepareTimeInput'),
     menuInput: document.getElementById('menuInput'),
     applySettingsBtn: document.getElementById('applySettingsBtn'),
+    resetMenuBtn: document.getElementById('resetMenuBtn'),
     // 進捗表示関連の要素
     horizontalProgressBar: document.getElementById('horizontalProgressBar'),
     horizontalProgress: document.getElementById('horizontalProgress'),
@@ -210,15 +261,15 @@ const elements = {
 // 初期表示の更新
 function updateDisplay() {
     elements.timeDisplay.textContent = timer.currentTime;
-    
+
     // 設定入力フィールドの値を更新
     elements.workTimeInput.value = timer.settings.workTime;
     elements.prepareTimeInput.value = timer.settings.prepareTime;
     elements.menuInput.value = timer.settings.menu.join('\n');
-    
+
     // 進捗表示の更新
     updateProgressDisplay();
-    
+
     // 横セット区切り線の作成
     createHorizontalSetDividers();
 }
@@ -226,7 +277,7 @@ function updateDisplay() {
 // タイマーの状態に応じた表示の更新
 function updateTimerStyle() {
     elements.timerDisplay.classList.remove('work', 'rest');
-    
+
     switch (timer.state) {
         case TimerState.PREPARE:
             elements.status.textContent = 'READY!!!';
@@ -269,7 +320,7 @@ function updateTimerStyle() {
             audioSystem.playFinish();
             break;
     }
-    
+
     // 初期背景色を設定
     updateTimerBackgroundGradient();
 }
@@ -278,7 +329,7 @@ function updateTimerStyle() {
 function updateTimerBackgroundGradient() {
     let progress = 0;
     let progressColor, remainingColor;
-    
+
     if (timer.state === TimerState.WORK) {
         const totalTime = timer.settings.workTime;
         progress = ((totalTime - timer.currentTime) / totalTime) * 100;
@@ -302,9 +353,9 @@ function updateTimerBackgroundGradient() {
         elements.timerDisplay.style.background = '';
         return;
     }
-    
+
     // 線形グラデーションで進捗を表示（上から下へ）
-    elements.timerDisplay.style.background = 
+    elements.timerDisplay.style.background =
         `linear-gradient(to bottom, ${progressColor} ${progress}%, ${remainingColor} ${progress}%)`;
 }
 
@@ -313,9 +364,16 @@ function updateProgressDisplay() {
     // 全体進捗
     let completedSets = 0;
     let currentSetProgress = 0;
-    
+    const totalSets = timer.settings.totalSets;
+
+    if (totalSets <= 0) {
+        elements.horizontalProgress.style.width = '0%';
+        elements.verticalProgress.style.height = '0%';
+        return;
+    }
+
     if (timer.state === TimerState.FINISHED) {
-        completedSets = timer.settings.totalSets;
+        completedSets = totalSets;
         currentSetProgress = 0;
     } else if (timer.state === TimerState.PREPARE) {
         completedSets = 0;
@@ -328,11 +386,11 @@ function updateProgressDisplay() {
         completedSets = timer.currentSet;
         currentSetProgress = 0;
     }
-    
-    const overallProgressPercent = ((completedSets + currentSetProgress) / timer.settings.totalSets) * 100;
-    
+
+    const overallProgressPercent = ((completedSets + currentSetProgress) / totalSets) * 100;
+
     elements.horizontalProgress.style.width = overallProgressPercent + '%';
-    
+
     // 縦進捗バーの更新（現在のエクササイズの進捗）
     updateVerticalProgress();
 }
@@ -340,7 +398,7 @@ function updateProgressDisplay() {
 // 縦のプログレスバーを更新
 function updateVerticalProgress() {
     let verticalProgressPercent = 0;
-    
+
     if (timer.state === TimerState.WORK) {
         const totalTime = timer.settings.workTime;
         verticalProgressPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
@@ -351,7 +409,7 @@ function updateVerticalProgress() {
         const totalTime = timer.settings.prepareTime;
         verticalProgressPercent = ((totalTime - timer.currentTime) / totalTime) * 100;
     }
-    
+
     elements.verticalProgress.style.height = verticalProgressPercent + '%';
 }
 
@@ -359,7 +417,10 @@ function updateVerticalProgress() {
 function createHorizontalSetDividers() {
     // 既存の区切り線を削除
     elements.horizontalSetDividers.innerHTML = '';
-    
+    if (timer.settings.totalSets <= 0) {
+        return;
+    }
+
     // 各セットの領域にセット番号を表示
     for (let i = 0; i < timer.settings.totalSets; i++) {
         const setLabel = document.createElement('div');
@@ -371,7 +432,7 @@ function createHorizontalSetDividers() {
         setLabel.textContent = i + 1;
         elements.horizontalSetDividers.appendChild(setLabel);
     }
-    
+
     // セット毎のグラデーション背景を作成
     updateSetGradientBackground();
 }
@@ -380,7 +441,11 @@ function createHorizontalSetDividers() {
 function updateSetGradientBackground() {
     const progressBar = elements.horizontalProgressBar;
     const totalSets = timer.settings.totalSets;
-    
+    if (totalSets <= 0) {
+        progressBar.style.background = '';
+        return;
+    }
+
     // 同系色（青系）で明度を変化させる
     const colors = [];
     for (let i = 0; i < totalSets; i++) {
@@ -390,18 +455,18 @@ function updateSetGradientBackground() {
         const lightness = 75 - (i * 25 / totalSets); // 75%から50%まで変化（最初からしっかり濃い目に）
         colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
     }
-    
+
     // グラデーションストップを生成（境目をはっきりさせる）
     const gradientStops = [];
     for (let i = 0; i < totalSets; i++) {
         const startPercent = (i / totalSets) * 100;
         const endPercent = ((i + 1) / totalSets) * 100;
-        
+
         // 各セットの色を開始から終了まで同じ色で塗る
         gradientStops.push(`${colors[i]} ${startPercent}%`);
         gradientStops.push(`${colors[i]} ${endPercent}%`);
     }
-    
+
     progressBar.style.background = `linear-gradient(to right, ${gradientStops.join(', ')})`;
 }
 
@@ -426,21 +491,21 @@ function formatTime(seconds) {
 function countdown() {
     timer.currentTime--;
     elements.timeDisplay.textContent = timer.currentTime;
-    
+
     // 進捗表示を更新
     updateProgressDisplay();
-    
+
     // 背景色のグラデーション更新
     updateTimerBackgroundGradient();
-    
+
     // ハーフタイム通知をチェック
     checkHalfTime();
-    
+
     // カウントダウン音（3,2,1）
     if (timer.currentTime <= 3 && timer.currentTime > 0) {
         audioSystem.playCountdown();
     }
-    
+
     if (timer.currentTime <= 0) {
         // 現在の状態に応じて次の状態へ遷移
         if (timer.state === TimerState.PREPARE) {
@@ -471,9 +536,16 @@ function countdown() {
 
 // タイマー開始
 async function startTimer() {
+    if (!timer.settings.menu || timer.settings.menu.length === 0) {
+        alert('メニューを1つ以上入力してください');
+        return;
+    }
     // 音声システムを初期化（ユーザーアクションが必要）
     await audioSystem.init();
-    
+
+    // Wake Lockを要求（画面がスリープしないようにする）
+    await wakeLockSystem.request();
+
     if (timer.state === TimerState.IDLE || timer.state === TimerState.FINISHED) {
         // 初回開始時は準備時間から
         timer.currentSet = 0;
@@ -486,21 +558,24 @@ async function startTimer() {
         // 一時停止からの再開時で開始時間が設定されていない場合
         timer.startTime = Date.now() - timer.totalElapsedTime * 1000;
     }
-    
+
     // ボタンの状態を更新
     elements.startBtn.disabled = true;
-    
+
     // インターバルを開始
     timer.interval = setInterval(countdown, 1000);
 }
 
 // タイマー停止
-function stopTimer() {
+async function stopTimer() {
     if (timer.interval) {
         clearInterval(timer.interval);
         timer.interval = null;
     }
-    
+
+    // Wake Lockを解放
+    await wakeLockSystem.release();
+
     // ボタンの状態を更新
     elements.startBtn.disabled = false;
 }
@@ -520,8 +595,8 @@ function resetTimer() {
 }
 
 // タイマー完了
-function finishTimer() {
-    stopTimer();
+async function finishTimer() {
+    await stopTimer();
     timer.state = TimerState.FINISHED;
     updateTimerStyle();
 }
@@ -531,24 +606,28 @@ function validateSettings() {
     const workTime = parseInt(elements.workTimeInput.value);
     const prepareTime = parseInt(elements.prepareTimeInput.value);
     const menuText = elements.menuInput.value.trim();
-    
+
     // 値の検証
     if (isNaN(workTime) || workTime < 1 || workTime > 999) {
         alert('運動時間は1〜999の間で入力してください');
         return false;
     }
-    
+
     if (isNaN(prepareTime) || prepareTime < 1 || prepareTime > 999) {
         alert('準備時間は1〜999の間で入力してください');
         return false;
     }
 
     const menu = menuText.split(/[\s\n,]+/).filter(item => item);
-    const totalSets = menu.length || 9; // メニューの数に応じてセット数を決定
-    
-    return { 
-        workTime, 
-        prepareTime, 
+    if (menu.length === 0) {
+        alert('メニューを1つ以上入力してください');
+        return false;
+    }
+    const totalSets = menu.length;
+
+    return {
+        workTime,
+        prepareTime,
         totalSets,
         menu,
         restTime: timer.settings.restTime,
@@ -564,43 +643,52 @@ function applySettings() {
         alert('タイマー動作中は設定を変更できません');
         return;
     }
-    
+
     const validatedSettings = validateSettings();
     if (!validatedSettings) return;
-    
+
     // 設定を更新
     timer.settings = validatedSettings;
-    
+
     // 設定を保存
     saveSettings();
-    
+
     // タイマーをリセット
     timer.state = TimerState.IDLE;
     timer.currentSet = 1;
     timer.currentTime = timer.settings.prepareTime;
     timer.startTime = null;
     timer.totalElapsedTime = 0;
-    
+
     // 表示を更新
     updateDisplay();
     updateTimerStyle();
-    
+
     // 横セット区切り線を再作成
     createHorizontalSetDividers();
-    
+
     // 設定パネルを閉じる
     elements.settingsPanel.classList.add('hidden');
-    
+
     // フィードバック
     const applyBtn = elements.applySettingsBtn;
     const originalText = applyBtn.textContent;
     applyBtn.textContent = '✓ 適用しました';
     applyBtn.style.backgroundColor = '#4ecdc4';
-    
+
     setTimeout(() => {
         applyBtn.textContent = originalText;
         applyBtn.style.backgroundColor = '';
     }, 1500);
+}
+
+function resetMenuToDefault() {
+    if (timer.interval) {
+        alert('タイマー動作中は設定を変更できません');
+        return;
+    }
+    elements.menuInput.value = DEFAULT_MENU.join('\n');
+    applySettings();
 }
 
 // 設定パネルの表示/非表示切り替え
@@ -616,7 +704,7 @@ async function superReload() {
     // 視覚的フィードバック
     elements.resetBtn.style.backgroundColor = '#ff6b6b';
     elements.resetBtn.innerHTML = '<span class="btn-icon">⟳</span>';
-    
+
     // Service Workerのキャッシュをクリア
     if ('caches' in window) {
         try {
@@ -629,19 +717,19 @@ async function superReload() {
             console.error('Failed to clear caches:', error);
         }
     }
-    
+
     // Service Workerの更新を強制
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
     }
-    
+
     // LocalStorageをクリア（設定は保持）
     const settings = localStorage.getItem('hiit-timer-settings');
     localStorage.clear();
     if (settings) {
         localStorage.setItem('hiit-timer-settings', settings);
     }
-    
+
     // フィードバック表示
     setTimeout(() => {
         window.location.reload(true);
@@ -701,6 +789,7 @@ elements.resetBtn.addEventListener('touchcancel', () => {
 
 elements.settingsBtn.addEventListener('click', toggleSettings);
 elements.applySettingsBtn.addEventListener('click', applySettings);
+elements.resetMenuBtn.addEventListener('click', resetMenuToDefault);
 
 // 入力フィールドのリアルタイムバリデーション
 elements.workTimeInput.addEventListener('input', (e) => {
@@ -722,21 +811,12 @@ function loadSettings() {
             const loadedSettings = JSON.parse(saved);
             // 既存の設定とマージ（新しいプロパティがある場合に対応）
             timer.settings = { ...timer.settings, ...loadedSettings };
-            
-            // メニューが空の場合はデフォルトメニューを使用
-            if (!timer.settings.menu || timer.settings.menu.length === 0) {
-                timer.settings.menu = [
-                    '腕立て',
-                    '腕立て(脇締め)',
-                    'スクワット',
-                    'バックランジ',
-                    'バックランジニーアップ',
-                    'マウンテンクライマー',
-                    'マウンテンクライマー(ツイスト)',
-                    'バービー',
-                    'ニーアップ'
-                ];
-                timer.settings.totalSets = 9;
+
+            if (Array.isArray(timer.settings.menu)) {
+                timer.settings.totalSets = timer.settings.menu.length;
+            } else {
+                timer.settings.menu = [];
+                timer.settings.totalSets = 0;
             }
         }
     } catch (error) {
@@ -761,6 +841,11 @@ function displayVersion() {
         versionElement.title = `Build: ${window.APP_VERSION.build}\nUpdated: ${window.APP_VERSION.timestamp}`;
     }
 }
+
+// タブの表示状態変更を監視（Wake Lock再取得用）
+document.addEventListener('visibilitychange', () => {
+    wakeLockSystem.handleVisibilityChange();
+});
 
 // 初期化
 loadSettings();

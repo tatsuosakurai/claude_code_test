@@ -663,6 +663,16 @@ body {
     transform: translateY(0);
 }
 
+.reset-menu-btn {
+    margin-top: 10px;
+    background-color: #6b7280;
+}
+
+.reset-menu-btn:hover {
+    background-color: #4b5563;
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+}
+
 @media (max-width: 768px) {
     .horizontal-set-label {
         font-size: 120px;
