@@ -254,23 +254,24 @@ function updateTimerBackgroundGradient() {
     if (timer.state === TimerState.WORK) {
         const totalTime = timer.settings.workTime;
         progress = ((totalTime - timer.currentTime) / totalTime) * 100;
-        // 運動中：進行部分は赤、残り部分は薄い赤
-        progressColor = '#ff6b6b';      // 濃い赤
-        remainingColor = '#ffb4b4';     // 薄い赤
+        progressColor = '#FF3B30';
+        remainingColor = '#0A0A0F';
     } else if (timer.state === TimerState.REST) {
         const totalTime = timer.settings.restTime;
         progress = ((totalTime - timer.currentTime) / totalTime) * 100;
-        // 休憩中：進行部分は緑、残り部分は薄い緑
-        progressColor = '#4ecdc4';      // 濃い緑
-        remainingColor = '#b4f0dc';     // 薄い緑
+        progressColor = '#30D158';
+        remainingColor = '#0A0A0F';
     } else if (timer.state === TimerState.PREPARE) {
         const totalTime = timer.settings.prepareTime;
         progress = ((totalTime - timer.currentTime) / totalTime) * 100;
-        // 準備中：進行部分は濃いグレー、残り部分は薄いグレー
-        progressColor = '#c8c8c8';      // 濃いグレー
-        remainingColor = '#f5f5f5';     // 薄いグレー
+        progressColor = '#FF9F0A';
+        remainingColor = '#0A0A0F';
+    } else if (timer.state === TimerState.FINISHED) {
+        elements.timerDisplay.style.background =
+            'radial-gradient(ellipse at center, rgba(191, 90, 242, 0.15) 0%, #0A0A0F 70%)';
+        return;
     } else {
-        // IDLE, FINISHED
+        // IDLE
         elements.timerDisplay.style.background = '';
         return;
     }
@@ -367,13 +368,12 @@ function updateSetGradientBackground() {
         return;
     }
 
-    // 同系色（青系）で明度を変化させる
+    // ダーク系で明度を変化させる
     const colors = [];
     for (let i = 0; i < totalSets; i++) {
-        // 青系の色相（200-220度）で、明度を変化させる
-        const hue = 210;
-        const saturation = 30;  // 彩度を少し上げて視認性を向上
-        const lightness = 75 - (i * 25 / totalSets); // 75%から50%まで変化（最初からしっかり濃い目に）
+        const hue = 220;
+        const saturation = 15;
+        const lightness = 12 - (i * 4 / totalSets); // 12%から8%まで変化
         colors.push(`hsl(${hue}, ${saturation}%, ${lightness}%)`);
     }
 
@@ -595,11 +595,11 @@ function applySettings() {
     const applyBtn = elements.applySettingsBtn;
     const originalText = applyBtn.textContent;
     applyBtn.textContent = '✓ 適用しました';
-    applyBtn.style.backgroundColor = '#4ecdc4';
+    applyBtn.style.background = '#30D158';
 
     setTimeout(() => {
         applyBtn.textContent = originalText;
-        applyBtn.style.backgroundColor = '';
+        applyBtn.style.background = '';
     }, 1500);
 }
 
@@ -623,8 +623,9 @@ let isLongPress = false;
 
 async function superReload() {
     // 視覚的フィードバック
-    elements.resetBtn.style.backgroundColor = '#ff6b6b';
-    elements.resetBtn.innerHTML = '<span class="btn-icon">⟳</span>';
+    elements.resetBtn.style.background = 'rgba(255, 59, 48, 0.35)';
+    elements.resetBtn.style.borderColor = 'rgba(255, 59, 48, 0.6)';
+    elements.resetBtn.innerHTML = '<span class="btn-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></span>';
 
     // Service Workerのキャッシュをクリア
     if ('caches' in window) {
